@@ -1,0 +1,11 @@
+node_modules/
+client/node_modules/
+server/node_modules/
+client/dist/
+server/gym.db
+server/gym.db-shm
+server/gym.db-wal
+.env
+.env.local
+*.log
+.DS_Store

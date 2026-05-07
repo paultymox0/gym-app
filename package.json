@@ -1,0 +1,20 @@
+{
+  "name": "gym-app",
+  "version": "1.0.0",
+  "description": "Full-stack gym and nutrition tracking app",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "build": "cd client && npm run build",
+    "start": "NODE_ENV=production node server/index.js",
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install",
+    "install:prod": "cd server && npm install --omit=dev && cd ../client && npm install"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
