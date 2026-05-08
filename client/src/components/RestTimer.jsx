@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { Play, Pause, RotateCcw, X } from 'lucide-react';
 
 function playBeep(frequency = 880, duration = 200, volume = 0.5) {
@@ -103,11 +104,14 @@ export default function RestTimer({ defaultTime = 90, onClose }) {
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm"
-         onClick={(e) => e.target === e.currentTarget && onClose && onClose()}>
-      <div className="bg-[#1E293B] rounded-t-3xl w-full max-w-md p-6 slide-up">
-        <div className="flex items-center justify-between mb-6">
+  return createPortal(
+    <div className="fixed bottom-0 left-0 right-0 z-50">
+      <div className="bg-[#1E293B] rounded-t-3xl w-full p-5 slide-up shadow-[0_-4px_24px_rgba(0,0,0,0.5)]">
+        {/* Drag handle */}
+        <div className="flex justify-center mb-4">
+          <div className="w-10 h-1 rounded-full bg-slate-600" />
+        </div>
+        <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-bold text-white">Descanso</h3>
           {onClose && (
             <button onClick={onClose} className="p-2 rounded-xl bg-[#0F172A] text-slate-400 active:scale-90">
@@ -117,7 +121,7 @@ export default function RestTimer({ defaultTime = 90, onClose }) {
         </div>
 
         {/* Circular progress */}
-        <div className="flex flex-col items-center mb-6">
+        <div className="flex flex-col items-center mb-4">
           <div className="relative w-32 h-32">
             <svg className="w-32 h-32 -rotate-90" viewBox="0 0 100 100">
               <circle
@@ -154,18 +158,25 @@ export default function RestTimer({ defaultTime = 90, onClose }) {
         </div>
 
         {/* Preset buttons */}
-        <div className="flex gap-2 mb-4">
-          {[30, 45, 60, 75, 90, 120].map(t => (
+        <div className="flex gap-2 mb-3">
+          {[
+            { s: 30, label: '30s' },
+            { s: 45, label: '45s' },
+            { s: 60, label: '1m' },
+            { s: 75, label: '1.25m' },
+            { s: 90, label: '1.5m' },
+            { s: 120, label: '2m' },
+          ].map(({ s, label }) => (
             <button
-              key={t}
-              onClick={() => setPreset(t)}
+              key={s}
+              onClick={() => setPreset(s)}
               className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all active:scale-90 ${
-                totalTime === t && !finished
+                totalTime === s && !finished
                   ? 'bg-blue-500 text-white'
                   : 'bg-[#0F172A] text-slate-400'
               }`}
             >
-              {t >= 60 ? `${t / 60}m` : `${t}s`}
+              {label}
             </button>
           ))}
         </div>
@@ -200,6 +211,8 @@ export default function RestTimer({ defaultTime = 90, onClose }) {
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
+
