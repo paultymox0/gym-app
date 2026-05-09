@@ -105,12 +105,22 @@ input, select, textarea {
   to   { transform: rotate(360deg); }
 }
 
+@keyframes glow-pulse-green {
+  0%, 100% { box-shadow: 0 0 28px #00FF8844, 0 0 56px #00FF8820; }
+  50%       { box-shadow: 0 0 50px #00FF88AA, 0 0 90px #00FF8855, 0 0 130px #00FF8820; }
+}
+
+@keyframes glow-pulse-purple {
+  0%, 100% { box-shadow: 0 0 28px #BF5FFF44, 0 0 56px #BF5FFF20; }
+  50%       { box-shadow: 0 0 50px #BF5FFFAA, 0 0 90px #BF5FFF55, 0 0 130px #BF5FFF20; }
+}
+
 .led-wrapper-green {
   position: relative;
   padding: 2px;
   border-radius: 24px;
   overflow: hidden;
-  box-shadow: 0 0 28px #00FF8830, 0 0 56px #00FF8815;
+  animation: glow-pulse-green 2s ease-in-out infinite;
 }
 
 .led-wrapper-green::before {
@@ -129,7 +139,7 @@ input, select, textarea {
   padding: 2px;
   border-radius: 24px;
   overflow: hidden;
-  box-shadow: 0 0 28px #BF5FFF30, 0 0 56px #BF5FFF15;
+  animation: glow-pulse-purple 2s ease-in-out infinite;
 }
 
 .led-wrapper-purple::before {

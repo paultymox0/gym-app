@@ -27,32 +27,7 @@ export function AuthProvider({ children }) {
     setLoading(false);
   }, []);
 
-  const login = useCallback(async (username, password) => {
-    try {
-      const res = await fetch(`${API_BASE}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Error al iniciar sesión');
-      }
-
-      setToken(data.token);
-      setUser(data.user);
-      localStorage.setItem('gym_token', data.token);
-      localStorage.setItem('gym_user', JSON.stringify(data.user));
-
-      return { success: true };
-    } catch (error) {
-      return { success: false, error: error.message };
-    }
-  }, []);
-
-  const loginDirect = useCallback(async (username) => {
+  const login = useCallback(async (username) => {
     try {
       const res = await fetch(`${API_BASE}/auth/login-direct`, {
         method: 'POST',
@@ -119,7 +94,6 @@ export function AuthProvider({ children }) {
     token,
     loading,
     login,
-    loginDirect,
     logout,
     apiCall,
     isAuthenticated: !!user

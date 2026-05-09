@@ -23,13 +23,13 @@ const USERS = [
 ];
 
 export default function Login() {
-  const { loginDirect } = useAuth();
+  const { login } = useAuth();
   const [loading, setLoading] = useState(null);
 
   const handleSelect = async (user) => {
     if (loading) return;
     setLoading(user.username);
-    await loginDirect(user.username);
+    await login(user.username);
     setLoading(null);
   };
 
@@ -37,7 +37,7 @@ export default function Login() {
     <div
       style={{
         minHeight: '100svh',
-        background: '#07070F',
+        background: '#0A0A0A',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -45,32 +45,25 @@ export default function Login() {
         padding: '24px',
       }}
     >
-      {/* Header */}
-      <div style={{ textAlign: 'center', marginBottom: '52px' }}>
-        <div style={{ fontSize: '52px', lineHeight: 1, marginBottom: '14px' }}>🏋️</div>
-        <h1
-          style={{
-            fontSize: '30px',
-            fontWeight: '800',
-            color: '#ffffff',
-            letterSpacing: '-0.5px',
-            margin: 0,
-          }}
-        >
-          GymApp
-        </h1>
-        <p style={{ color: '#555', marginTop: '6px', fontSize: '13px', letterSpacing: '0.5px' }}>
-          ¿Quién entrena hoy?
-        </p>
-      </div>
+      <h1
+        style={{
+          fontSize: '26px',
+          fontWeight: '700',
+          color: '#ffffff',
+          letterSpacing: '0px',
+          margin: '0 0 48px 0',
+          textAlign: 'center',
+        }}
+      >
+        Elige tu perfil
+      </h1>
 
-      {/* Profile cards */}
       <div
         style={{
           display: 'flex',
           gap: '16px',
           width: '100%',
-          maxWidth: '380px',
+          maxWidth: '390px',
         }}
       >
         {USERS.map((user) => (
@@ -81,7 +74,7 @@ export default function Login() {
               disabled={!!loading}
               style={{
                 width: '100%',
-                height: '220px',
+                height: '250px',
                 background: user.bg,
                 border: 'none',
                 borderRadius: '22px',
@@ -108,12 +101,12 @@ export default function Login() {
                 />
               ) : (
                 <>
-                  <div style={{ fontSize: '52px', lineHeight: 1, marginBottom: '14px' }}>
+                  <div style={{ fontSize: '58px', lineHeight: 1, marginBottom: '16px' }}>
                     {user.emoji}
                   </div>
                   <div
                     style={{
-                      fontSize: '24px',
+                      fontSize: '26px',
                       fontWeight: '800',
                       color: user.accent,
                       letterSpacing: '-0.3px',
@@ -125,7 +118,7 @@ export default function Login() {
                     style={{
                       fontSize: '11px',
                       color: `${user.accent}70`,
-                      marginTop: '7px',
+                      marginTop: '8px',
                       letterSpacing: '0.3px',
                     }}
                   >
@@ -138,7 +131,7 @@ export default function Login() {
         ))}
       </div>
 
-      <p style={{ color: '#2a2a2a', fontSize: '11px', marginTop: '52px' }}>
+      <p style={{ color: '#222', fontSize: '11px', marginTop: '52px' }}>
         GymApp v1.0 • Timmy & Andrea
       </p>
     </div>
