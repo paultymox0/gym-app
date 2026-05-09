@@ -2,37 +2,74 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db/database');
 
-const SUPPLEMENTS = {
-  1: [ // Timmy
-    { name: 'Vitamina D3 2000UI', time: 'morning' },
-    { name: 'Creatina 5g', time: 'post-workout' },
-    { name: 'Omega-3 2g', time: 'lunch' }
-  ],
-  2: [ // Andrea
-    { name: 'Vitamina D3 2000UI', time: 'morning' },
-    { name: 'Magnesio 250mg', time: 'before-sleep' },
-    { name: 'Omega-3 2g', time: 'lunch' }
-  ]
-};
+// GET /api/supplements/definitions/:userId
+router.get('/definitions/:userId', (req, res) => {
+  const uid = parseInt(req.params.userId);
+  const defs = db.prepare(
+    'SELECT * FROM supplement_definitions WHERE user_id = ? ORDER BY sort_order, id'
+  ).all(uid);
+  res.json({ definitions: defs });
+});
+
+// POST /api/supplements/definitions
+router.post('/definitions', (req, res) => {
+  const { user_id, name, time } = req.body;
+  const uid = parseInt(user_id);
+
+  const count = db.prepare(
+    'SELECT COUNT(*) as c FROM supplement_definitions WHERE user_id = ?'
+  ).get(uid);
+  if (count.c >= 5) {
+    return res.status(400).json({ error: 'Máximo 5 suplementos permitidos' });
+  }
+
+  const maxOrder = db.prepare(
+    'SELECT MAX(sort_order) as m FROM supplement_definitions WHERE user_id = ?'
+  ).get(uid);
+
+  const result = db.prepare(
+    'INSERT INTO supplement_definitions (user_id, name, time, sort_order) VALUES (?, ?, ?, ?)'
+  ).run(uid, name.trim(), time || 'morning', (maxOrder.m || 0) + 1);
+
+  const def = db.prepare('SELECT * FROM supplement_definitions WHERE id = ?').get(result.lastInsertRowid);
+  res.status(201).json({ definition: def });
+});
+
+// PUT /api/supplements/definitions/:id
+router.put('/definitions/:id', (req, res) => {
+  const { name, time } = req.body;
+  const id = parseInt(req.params.id);
+  db.prepare('UPDATE supplement_definitions SET name = ?, time = ? WHERE id = ?').run(name.trim(), time, id);
+  const def = db.prepare('SELECT * FROM supplement_definitions WHERE id = ?').get(id);
+  res.json({ definition: def });
+});
+
+// DELETE /api/supplements/definitions/:id
+router.delete('/definitions/:id', (req, res) => {
+  const id = parseInt(req.params.id);
+  db.prepare('DELETE FROM supplement_definitions WHERE id = ?').run(id);
+  res.json({ success: true });
+});
 
 // GET /api/supplements/:userId/:date
 router.get('/:userId/:date', (req, res) => {
   const { userId, date } = req.params;
   const uid = parseInt(userId);
 
-  const userSupplements = SUPPLEMENTS[uid] || [];
+  const defs = db.prepare(
+    'SELECT * FROM supplement_definitions WHERE user_id = ? ORDER BY sort_order, id'
+  ).all(uid);
 
-  // Get existing logs for this date
   const logs = db.prepare(
     'SELECT * FROM supplements_log WHERE user_id = ? AND date = ?'
   ).all(uid, date);
 
-  // Merge supplement list with logs
-  const result = userSupplements.map(sup => {
-    const log = logs.find(l => l.supplement_name === sup.name);
+  const result = defs.map(def => {
+    const log = logs.find(l => l.supplement_name === def.name);
     return {
-      name: sup.name,
-      time: sup.time,
+      id: def.id,
+      name: def.name,
+      time: def.time,
       taken: log ? log.taken === 1 : false,
       log_id: log ? log.id : null
     };

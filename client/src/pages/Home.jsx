@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Dumbbell, Apple, Pill, Flame, TrendingUp, Moon, ChevronRight, Check, Calendar } from 'lucide-react';
+import { Dumbbell, Apple, Flame, Moon, ChevronRight, Check, Calendar } from 'lucide-react';
+import SupplementsSection from '../components/SupplementsSection';
 
 const DAY_NAMES = {
   upper_a: 'Upper A',
@@ -56,11 +57,11 @@ export default function Home() {
   const navigate = useNavigate();
   const [todayData, setTodayData] = useState(null);
   const [nutrition, setNutrition] = useState(null);
-  const [supplements, setSupplements] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const today = new Date().toISOString().split('T')[0];
+  const todayDisplay = today.split('-').reverse().join('/');
   const accentColor = user?.color || '#3B82F6';
 
   useEffect(() => {
@@ -71,42 +72,19 @@ export default function Home() {
   async function fetchData() {
     setLoading(true);
     try {
-      const [sessionRes, nutritionRes, suppRes, statsRes] = await Promise.all([
+      const [sessionRes, nutritionRes, statsRes] = await Promise.all([
         apiCall(`/sessions/today/${user.id}`),
         apiCall(`/nutrition/${user.id}/${today}`),
-        apiCall(`/supplements/${user.id}/${today}`),
         apiCall(`/stats/${user.id}`)
       ]);
 
       if (sessionRes.ok) setTodayData(await sessionRes.json());
       if (nutritionRes.ok) setNutrition(await nutritionRes.json());
-      if (suppRes.ok) setSupplements((await suppRes.json()).supplements || []);
       if (statsRes.ok) setStats(await statsRes.json());
     } catch (err) {
       console.error('Error fetching home data:', err);
     }
     setLoading(false);
-  }
-
-  async function toggleSupplement(suppName, currentTaken) {
-    try {
-      const res = await apiCall('/supplements/toggle', {
-        method: 'POST',
-        body: JSON.stringify({
-          user_id: user.id,
-          date: today,
-          supplement_name: suppName,
-          taken: !currentTaken
-        })
-      });
-      if (res.ok) {
-        setSupplements(prev =>
-          prev.map(s => s.name === suppName ? { ...s, taken: !currentTaken } : s)
-        );
-      }
-    } catch (err) {
-      console.error('Error toggling supplement:', err);
-    }
   }
 
   const dayOfWeek = new Date().getDay();
@@ -122,8 +100,6 @@ export default function Home() {
 
   const caloriesConsumed = nutrition?.totals?.calories || 0;
   const caloriesGoal = user?.calories_goal || 2000;
-  const supplementsTaken = supplements.filter(s => s.taken).length;
-  const supplementsTotal = supplements.length;
 
   return (
     <div className="min-h-screen bg-[#07070F] pb-24 fade-in">
@@ -131,7 +107,7 @@ export default function Home() {
       <div className="px-4 pt-6 pb-4" style={{ paddingTop: `calc(env(safe-area-inset-top) + 1.5rem)` }}>
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-slate-400 text-sm">{dayNames[dayOfWeek]}, {today}</p>
+            <p className="text-slate-400 text-sm">{dayNames[dayOfWeek]}, {todayDisplay}</p>
             <h1 className="text-2xl font-bold text-white">
               Hola, <span style={{ color: accentColor }}>{user?.name}</span> 👋
             </h1>
@@ -260,47 +236,7 @@ export default function Home() {
         </button>
 
         {/* Supplements */}
-        <div className="card">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <Pill size={20} style={{ color: accentColor }} />
-              <h3 className="font-semibold text-white">Suplementos</h3>
-            </div>
-            <span className="text-sm font-semibold" style={{ color: accentColor }}>
-              {supplementsTaken}/{supplementsTotal}
-            </span>
-          </div>
-
-          <div className="space-y-2">
-            {supplements.map(supp => (
-              <button
-                key={supp.name}
-                onClick={() => toggleSupplement(supp.name, supp.taken)}
-                className="w-full flex items-center gap-3 p-3 rounded-xl bg-[#07070F] active:scale-[0.98] transition-all"
-              >
-                <div
-                  className={`w-7 h-7 rounded-xl flex items-center justify-center transition-all ${
-                    supp.taken ? 'text-white' : 'bg-[#0D1422]'
-                  }`}
-                  style={{ backgroundColor: supp.taken ? accentColor : undefined }}
-                >
-                  {supp.taken ? <Check size={14} /> : null}
-                </div>
-                <div className="text-left">
-                  <p className={`text-sm font-medium ${supp.taken ? 'text-slate-400 line-through' : 'text-white'}`}>
-                    {supp.name}
-                  </p>
-                  <p className="text-xs text-slate-500">
-                    {supp.time === 'morning' ? 'Mañana' :
-                     supp.time === 'post-workout' ? 'Post-entreno' :
-                     supp.time === 'lunch' ? 'Almuerzo' :
-                     supp.time === 'before-sleep' ? 'Antes de dormir' : supp.time}
-                  </p>
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
+        <SupplementsSection accentColor={accentColor} />
 
         {/* Stats row */}
         {stats && (

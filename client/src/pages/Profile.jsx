@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { WeightChart, VolumeChart } from '../components/ProgressChart';
 import {
-  User, Scale, Trophy, TrendingUp, Download, LogOut,
-  Plus, Heart, Pill, ChevronRight, Check, X, Calendar
+  Scale, Trophy, TrendingUp, Download, LogOut,
+  Plus, Heart, ChevronRight, X
 } from 'lucide-react';
+import SupplementsSection from '../components/SupplementsSection';
 
 function AddWeightModal({ onClose, onAdd, accentColor }) {
   const [weight, setWeight] = useState('');
@@ -89,7 +90,6 @@ export default function Profile() {
   const [weightData, setWeightData] = useState([]);
   const [volumeData, setVolumeData] = useState([]);
   const [stats, setStats] = useState(null);
-  const [supplements, setSupplements] = useState([]);
   const [showAddWeight, setShowAddWeight] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -104,16 +104,14 @@ export default function Profile() {
   async function fetchData() {
     setLoading(true);
     try {
-      const [weightRes, statsRes, suppRes, volumeRes] = await Promise.all([
+      const [weightRes, statsRes, volumeRes] = await Promise.all([
         apiCall(`/bodyweight/${user.id}?limit=60`),
         apiCall(`/stats/${user.id}`),
-        apiCall(`/supplements/${user.id}/${today}`),
         apiCall(`/exercises/volume/${user.id}?days=30`)
       ]);
 
       if (weightRes.ok) setWeightData((await weightRes.json()).entries || []);
       if (statsRes.ok) setStats(await statsRes.json());
-      if (suppRes.ok) setSupplements((await suppRes.json()).supplements || []);
       if (volumeRes.ok) setVolumeData((await volumeRes.json()).volume || []);
     } catch (err) {
       console.error('Error fetching profile data:', err);
@@ -132,27 +130,6 @@ export default function Profile() {
       }
     } catch (err) {
       console.error('Error adding weight:', err);
-    }
-  }
-
-  async function toggleSupplement(suppName, currentTaken) {
-    try {
-      const res = await apiCall('/supplements/toggle', {
-        method: 'POST',
-        body: JSON.stringify({
-          user_id: user.id,
-          date: today,
-          supplement_name: suppName,
-          taken: !currentTaken
-        })
-      });
-      if (res.ok) {
-        setSupplements(prev =>
-          prev.map(s => s.name === suppName ? { ...s, taken: !currentTaken } : s)
-        );
-      }
-    } catch (err) {
-      console.error('Error toggling supplement:', err);
     }
   }
 
@@ -355,39 +332,7 @@ export default function Profile() {
         )}
 
         {/* Supplements */}
-        <div className="card">
-          <div className="flex items-center gap-2 mb-3">
-            <Pill size={18} style={{ color: accentColor }} />
-            <h3 className="font-semibold text-white">Suplementos Hoy</h3>
-          </div>
-          <div className="space-y-2">
-            {supplements.map(supp => (
-              <button
-                key={supp.name}
-                onClick={() => toggleSupplement(supp.name, supp.taken)}
-                className="w-full flex items-center gap-3 p-3 rounded-xl bg-[#07070F] active:scale-[0.98] transition-all"
-              >
-                <div
-                  className="w-7 h-7 rounded-xl flex items-center justify-center transition-all text-white shrink-0"
-                  style={{ backgroundColor: supp.taken ? accentColor : '#334155' }}
-                >
-                  {supp.taken && <Check size={14} />}
-                </div>
-                <div className="text-left flex-1">
-                  <p className={`text-sm font-medium ${supp.taken ? 'text-slate-400 line-through' : 'text-white'}`}>
-                    {supp.name}
-                  </p>
-                  <p className="text-xs text-slate-500">
-                    {supp.time === 'morning' ? '☀️ Mañana' :
-                     supp.time === 'post-workout' ? '💪 Post-entreno' :
-                     supp.time === 'lunch' ? '🍽️ Almuerzo' :
-                     supp.time === 'before-sleep' ? '🌙 Antes de dormir' : supp.time}
-                  </p>
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
+        <SupplementsSection accentColor={accentColor} />
 
         {/* Sara-only: Cycle page access */}
         {user?.gender === 'female' && (

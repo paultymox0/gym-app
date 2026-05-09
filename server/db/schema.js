@@ -68,6 +68,15 @@ function initializeSchema() {
       FOREIGN KEY(user_id) REFERENCES users(id)
     );
 
+    CREATE TABLE IF NOT EXISTS supplement_definitions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER,
+      name TEXT NOT NULL,
+      time TEXT DEFAULT 'morning',
+      sort_order INTEGER DEFAULT 0,
+      FOREIGN KEY(user_id) REFERENCES users(id)
+    );
+
     CREATE TABLE IF NOT EXISTS cycle_days (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id INTEGER,
