@@ -9,21 +9,10 @@ export function AuthProvider({ children }) {
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Initialize from localStorage
+  // Always start at profile selection — clear any saved session on load
   useEffect(() => {
-    const savedToken = localStorage.getItem('gym_token');
-    const savedUser = localStorage.getItem('gym_user');
-
-    if (savedToken && savedUser) {
-      try {
-        const parsedUser = JSON.parse(savedUser);
-        setToken(savedToken);
-        setUser(parsedUser);
-      } catch (e) {
-        localStorage.removeItem('gym_token');
-        localStorage.removeItem('gym_user');
-      }
-    }
+    localStorage.removeItem('gym_token');
+    localStorage.removeItem('gym_user');
     setLoading(false);
   }, []);
 

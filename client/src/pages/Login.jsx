@@ -5,7 +5,7 @@ const USERS = [
   {
     username: 'timmy',
     name: 'Timmy',
-    emoji: '💪',
+    emoji: '💚',
     bg: '#0D1F0D',
     accent: '#00FF88',
     ledClass: 'led-wrapper-green',
