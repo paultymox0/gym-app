@@ -25,7 +25,7 @@ export default function SupplementsSection({ accentColor }) {
   const [saving, setSaving] = useState(false);
 
   const today = new Date().toISOString().split('T')[0];
-  const MAX = 5;
+  const MAX = 10;
 
   useEffect(() => {
     if (!user) return;

@@ -19,8 +19,8 @@ router.post('/definitions', (req, res) => {
   const count = db.prepare(
     'SELECT COUNT(*) as c FROM supplement_definitions WHERE user_id = ?'
   ).get(uid);
-  if (count.c >= 5) {
-    return res.status(400).json({ error: 'Máximo 5 suplementos permitidos' });
+  if (count.c >= 10) {
+    return res.status(400).json({ error: 'Máximo 10 suplementos permitidos' });
   }
 
   const maxOrder = db.prepare(
