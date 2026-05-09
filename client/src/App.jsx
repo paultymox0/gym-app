@@ -32,7 +32,7 @@ function ProtectedRoute({ children }) {
   return (
     <div
       className="max-w-md mx-auto relative min-h-screen"
-      style={{ '--accent': accent, '--accent-dim': `${accent}30`, '--accent-faint': `${accent}12` }}
+      style={{ '--accent': accent, '--accent-dim': `${accent}50`, '--accent-faint': `${accent}22` }}
     >
       {children}
       <BottomNav />

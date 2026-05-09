@@ -35,8 +35,8 @@
     background: #0E1520;
     border-radius: 18px;
     padding: 16px;
-    border: 1px solid rgba(255,255,255,0.06);
-    box-shadow: 0 0 0 1px var(--accent-faint, transparent),
+    border: 1px solid var(--accent-dim, rgba(255,255,255,0.08));
+    box-shadow: 0 0 18px var(--accent-faint, transparent),
                 0 4px 24px rgba(0,0,0,0.4);
     transition: box-shadow 0.2s ease;
   }
