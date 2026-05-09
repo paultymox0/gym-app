@@ -49,8 +49,11 @@ app.get('/api/health', (req, res) => {
 // Serve React client in production
 if (IS_PROD) {
   const clientDist = path.join(__dirname, '..', 'client', 'dist');
-  app.use(express.static(clientDist));
+  // Static assets (JS/CSS) get long cache — they're content-hashed by Vite
+  app.use(express.static(clientDist, { maxAge: '1y', immutable: true }));
+  // HTML must never be cached so the browser always gets the latest bundle hashes
   app.get('*', (req, res) => {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.sendFile(path.join(clientDist, 'index.html'));
   });
 }
