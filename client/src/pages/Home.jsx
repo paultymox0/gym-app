@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Dumbbell, Apple, Flame, Moon, ChevronRight, Check, Calendar } from 'lucide-react';
+import { Dumbbell, Flame, Moon, ChevronRight, Check, Calendar } from 'lucide-react';
 import SupplementsSection from '../components/SupplementsSection';
 
 const DAY_NAMES = {
@@ -22,41 +22,10 @@ const DAY_COLORS = {
   abs_b: '#F97316'
 };
 
-function CalorieRing({ current, goal, color }) {
-  const percentage = Math.min((current / goal) * 100, 100);
-  const radius = 42;
-  const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (percentage / 100) * circumference;
-
-  return (
-    <div className="relative w-28 h-28">
-      <svg className="w-28 h-28 -rotate-90" viewBox="0 0 100 100">
-        <circle cx="50" cy="50" r={radius} fill="none" stroke="#334155" strokeWidth="10" />
-        <circle
-          cx="50" cy="50" r={radius}
-          fill="none"
-          stroke={color}
-          strokeWidth="10"
-          strokeLinecap="round"
-          strokeDasharray={circumference}
-          strokeDashoffset={strokeDashoffset}
-          className="transition-all duration-700"
-        />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-2xl font-bold text-white">{current}</span>
-        <span className="text-xs text-slate-400">/ {goal}</span>
-        <span className="text-xs text-slate-500">kcal</span>
-      </div>
-    </div>
-  );
-}
-
 export default function Home() {
   const { user, apiCall } = useAuth();
   const navigate = useNavigate();
   const [todayData, setTodayData] = useState(null);
-  const [nutrition, setNutrition] = useState(null);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -72,14 +41,12 @@ export default function Home() {
   async function fetchData() {
     setLoading(true);
     try {
-      const [sessionRes, nutritionRes, statsRes] = await Promise.all([
+      const [sessionRes, statsRes] = await Promise.all([
         apiCall(`/sessions/today/${user.id}`),
-        apiCall(`/nutrition/${user.id}/${today}`),
         apiCall(`/stats/${user.id}`)
       ]);
 
       if (sessionRes.ok) setTodayData(await sessionRes.json());
-      if (nutritionRes.ok) setNutrition(await nutritionRes.json());
       if (statsRes.ok) setStats(await statsRes.json());
     } catch (err) {
       console.error('Error fetching home data:', err);
@@ -97,9 +64,6 @@ export default function Home() {
       </div>
     );
   }
-
-  const caloriesConsumed = nutrition?.totals?.calories || 0;
-  const caloriesGoal = user?.calories_goal || 2000;
 
   return (
     <div className="min-h-screen bg-[#07070F] pb-24 fade-in">
@@ -189,51 +153,6 @@ export default function Home() {
             )}
           </button>
         )}
-
-        {/* Calorie summary */}
-        <button
-          onClick={() => navigate('/nutrition')}
-          className="card w-full text-left active:scale-[0.98] transition-all"
-        >
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <Apple size={20} style={{ color: accentColor }} />
-              <h3 className="font-semibold text-white">Nutrición Hoy</h3>
-            </div>
-            <ChevronRight size={18} className="text-slate-500" />
-          </div>
-
-          <div className="flex items-center gap-6">
-            <CalorieRing
-              current={caloriesConsumed}
-              goal={caloriesGoal}
-              color={accentColor}
-            />
-            <div className="flex-1 space-y-3">
-              {[
-                { label: 'Proteína', value: nutrition?.totals?.protein || 0, unit: 'g', color: '#F59E0B' },
-                { label: 'Grasas', value: nutrition?.totals?.fat || 0, unit: 'g', color: '#EC4899' },
-                { label: 'Carbos', value: nutrition?.totals?.carbs || 0, unit: 'g', color: '#10B981' }
-              ].map(macro => (
-                <div key={macro.label}>
-                  <div className="flex justify-between text-xs mb-1">
-                    <span className="text-slate-400">{macro.label}</span>
-                    <span className="font-semibold" style={{ color: macro.color }}>
-                      {macro.value.toFixed(0)}{macro.unit}
-                    </span>
-                  </div>
-                </div>
-              ))}
-
-              <div className="text-sm text-slate-400">
-                {caloriesGoal - caloriesConsumed > 0
-                  ? `Faltan ${caloriesGoal - caloriesConsumed} kcal`
-                  : `+${caloriesConsumed - caloriesGoal} kcal extra`
-                }
-              </div>
-            </div>
-          </div>
-        </button>
 
         {/* Supplements */}
         <SupplementsSection accentColor={accentColor} />

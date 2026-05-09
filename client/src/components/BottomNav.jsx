@@ -1,12 +1,11 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, Dumbbell, Apple, User } from 'lucide-react';
+import { Home, Dumbbell, User } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 const navItems = [
   { path: '/', label: 'Inicio', icon: Home },
   { path: '/session', label: 'Sesión', icon: Dumbbell },
-  { path: '/nutrition', label: 'Nutrición', icon: Apple },
   { path: '/profile', label: 'Perfil', icon: User },
 ];
 

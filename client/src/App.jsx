@@ -5,9 +5,7 @@ import BottomNav from './components/BottomNav';
 import Login from './pages/Login';
 import Home from './pages/Home';
 import Session from './pages/Session';
-import Nutrition from './pages/Nutrition';
 import Profile from './pages/Profile';
-import CyclePage from './pages/CyclePage';
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated, loading, user } = useAuth();
@@ -74,26 +72,10 @@ function AppRoutes() {
         }
       />
       <Route
-        path="/nutrition"
-        element={
-          <ProtectedRoute>
-            <Nutrition />
-          </ProtectedRoute>
-        }
-      />
-      <Route
         path="/profile"
         element={
           <ProtectedRoute>
             <Profile />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/cycle"
-        element={
-          <ProtectedRoute>
-            <CyclePage />
           </ProtectedRoute>
         }
       />

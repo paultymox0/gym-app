@@ -1,12 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { WeightChart, VolumeChart } from '../components/ProgressChart';
 import {
   Scale, Trophy, TrendingUp, Download, LogOut,
-  Plus, Heart, ChevronRight, X
+  Plus, ChevronRight, X, History, Search
 } from 'lucide-react';
 import SupplementsSection from '../components/SupplementsSection';
+
+const DAYS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+
+function formatDate(dateStr) {
+  const [year, month, day] = dateStr.split('-');
+  const d = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+  return `${DAYS[d.getDay()]} ${day}/${month}/${year}`;
+}
+
+function formatDateShort(dateStr) {
+  if (!dateStr) return '';
+  const [year, month, day] = dateStr.split('-');
+  return `${day}/${month}/${year}`;
+}
 
 function AddWeightModal({ onClose, onAdd, accentColor }) {
   const [weight, setWeight] = useState('');
@@ -69,6 +82,63 @@ function AddWeightModal({ onClose, onAdd, accentColor }) {
   );
 }
 
+function ExerciseHistorySheet({ exercise, history, loading, onClose, accentColor }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm"
+         onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="bg-[#0D1422] rounded-t-3xl w-full max-w-md flex flex-col slide-up" style={{ maxHeight: '85vh' }}>
+        <div className="flex items-center justify-between p-5 border-b border-white/5 shrink-0">
+          <div>
+            <h3 className="text-lg font-bold text-white">{exercise}</h3>
+            {!loading && (
+              <p className="text-xs text-slate-500 mt-0.5">
+                {history.length} sesión{history.length !== 1 ? 'es' : ''} registrada{history.length !== 1 ? 's' : ''}
+              </p>
+            )}
+          </div>
+          <button onClick={onClose} className="p-2 rounded-xl bg-[#07070F] text-slate-400 active:scale-90">
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="overflow-y-auto flex-1 p-4 space-y-3 pb-8">
+          {loading ? (
+            <div className="flex justify-center py-12">
+              <div className="w-7 h-7 border-2 border-white/10 border-t-white/50 rounded-full animate-spin" />
+            </div>
+          ) : history.length === 0 ? (
+            <p className="text-center text-slate-500 py-12 text-sm">Sin datos registrados</p>
+          ) : (
+            history.map((session, i) => {
+              const completedSets = session.sets.filter(s => s.completed);
+              if (completedSets.length === 0) return null;
+              return (
+                <div key={i} className="bg-[#07070F] rounded-2xl p-4">
+                  <div className="text-xs font-semibold mb-3" style={{ color: accentColor }}>
+                    {formatDate(session.date)}
+                  </div>
+                  <div className="space-y-2">
+                    {completedSets.map((set, j) => (
+                      <div key={j} className="flex items-center gap-2 text-sm">
+                        <span className="text-slate-500 w-14 shrink-0 text-xs">Serie {set.set_number}</span>
+                        <span className="text-white font-bold">
+                          {set.weight > 0 ? `${set.weight}kg` : 'PC'}
+                        </span>
+                        <span className="text-slate-500">×</span>
+                        <span className="text-white font-bold">{set.reps} reps</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function StatCard({ label, value, unit, icon: Icon, color }) {
   return (
     <div className="card">
@@ -86,14 +156,18 @@ function StatCard({ label, value, unit, icon: Icon, color }) {
 
 export default function Profile() {
   const { user, logout, apiCall } = useAuth();
-  const navigate = useNavigate();
   const [weightData, setWeightData] = useState([]);
   const [volumeData, setVolumeData] = useState([]);
   const [stats, setStats] = useState(null);
   const [showAddWeight, setShowAddWeight] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const today = new Date().toISOString().split('T')[0];
+  const [exercises, setExercises] = useState([]);
+  const [exerciseSearch, setExerciseSearch] = useState('');
+  const [selectedExercise, setSelectedExercise] = useState(null);
+  const [exerciseHistory, setExerciseHistory] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+
   const accentColor = user?.color || '#3B82F6';
 
   useEffect(() => {
@@ -104,15 +178,17 @@ export default function Profile() {
   async function fetchData() {
     setLoading(true);
     try {
-      const [weightRes, statsRes, volumeRes] = await Promise.all([
+      const [weightRes, statsRes, volumeRes, exercisesRes] = await Promise.all([
         apiCall(`/bodyweight/${user.id}?limit=60`),
         apiCall(`/stats/${user.id}`),
-        apiCall(`/exercises/volume/${user.id}?days=30`)
+        apiCall(`/exercises/volume/${user.id}?days=30`),
+        apiCall(`/exercises/list/${user.id}`)
       ]);
 
       if (weightRes.ok) setWeightData((await weightRes.json()).entries || []);
       if (statsRes.ok) setStats(await statsRes.json());
       if (volumeRes.ok) setVolumeData((await volumeRes.json()).volume || []);
+      if (exercisesRes.ok) setExercises((await exercisesRes.json()).exercises || []);
     } catch (err) {
       console.error('Error fetching profile data:', err);
     }
@@ -125,26 +201,37 @@ export default function Profile() {
         method: 'POST',
         body: JSON.stringify({ user_id: user.id, date, weight })
       });
-      if (res.ok) {
-        await fetchData();
-      }
+      if (res.ok) await fetchData();
     } catch (err) {
       console.error('Error adding weight:', err);
     }
   }
 
-  async function exportData() {
+  async function handleSelectExercise(name) {
+    setSelectedExercise(name);
+    setExerciseHistory([]);
+    setHistoryLoading(true);
     try {
-      window.open(`/api/export/${user.id}`, '_blank');
+      const res = await apiCall(`/exercises/history/${user.id}/${encodeURIComponent(name)}`);
+      if (res.ok) setExerciseHistory((await res.json()).history || []);
     } catch (err) {
-      console.error('Error exporting data:', err);
+      console.error('Error fetching exercise history:', err);
     }
+    setHistoryLoading(false);
+  }
+
+  function exportData() {
+    window.open(`/api/export/${user.id}`, '_blank');
   }
 
   const latestWeight = weightData.length > 0 ? weightData[weightData.length - 1].weight : null;
   const weightChange = weightData.length >= 2
     ? (weightData[weightData.length - 1].weight - weightData[0].weight).toFixed(1)
     : null;
+
+  const filteredExercises = exercises.filter(ex =>
+    ex.exercise_name.toLowerCase().includes(exerciseSearch.toLowerCase())
+  );
 
   if (loading) {
     return (
@@ -189,7 +276,6 @@ export default function Profile() {
                   <span className="font-semibold" style={{ color: accentColor }}>
                     {user?.weight_goal}kg
                   </span>
-                  <span>• {user?.calories_goal} kcal/día</span>
                 </div>
               </div>
             </div>
@@ -331,27 +417,54 @@ export default function Profile() {
           </div>
         )}
 
+        {/* Exercise history */}
+        <div className="card">
+          <div className="flex items-center gap-2 mb-4">
+            <History size={18} style={{ color: accentColor }} />
+            <h3 className="font-semibold text-white">Mi historial</h3>
+            {exercises.length > 0 && (
+              <span className="text-xs text-slate-500 ml-auto">{exercises.length} ejercicios</span>
+            )}
+          </div>
+
+          <div className="relative mb-3">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+            <input
+              type="text"
+              value={exerciseSearch}
+              onChange={e => setExerciseSearch(e.target.value)}
+              placeholder="Buscar ejercicio..."
+              className="input-dark pl-9 text-sm"
+            />
+          </div>
+
+          {filteredExercises.length === 0 ? (
+            <p className="text-center text-slate-500 text-sm py-6">
+              {exercises.length === 0 ? 'Aún no hay ejercicios registrados' : 'No se encontró ese ejercicio'}
+            </p>
+          ) : (
+            <div className="space-y-1.5">
+              {filteredExercises.map((ex, i) => (
+                <button
+                  key={i}
+                  onClick={() => handleSelectExercise(ex.exercise_name)}
+                  className="w-full flex items-center justify-between p-3 rounded-xl bg-[#07070F] active:scale-[0.98] transition-all text-left"
+                >
+                  <div>
+                    <div className="text-sm font-medium text-white">{ex.exercise_name}</div>
+                    <div className="text-xs text-slate-500 mt-0.5">
+                      {ex.session_count} sesión{ex.session_count !== 1 ? 'es' : ''} · Último {formatDateShort(ex.last_date)}
+                    </div>
+                  </div>
+                  <ChevronRight size={16} className="text-slate-500 shrink-0 ml-2" />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* Supplements */}
         <SupplementsSection accentColor={accentColor} />
-
-        {/* Sara-only: Cycle page access */}
-        {user?.gender === 'female' && (
-          <button
-            onClick={() => navigate('/cycle')}
-            className="card w-full text-left active:scale-[0.98] transition-all border border-pink-500/20"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-pink-500/20 flex items-center justify-center">
-                <Heart size={20} className="text-pink-400" />
-              </div>
-              <div className="flex-1">
-                <div className="font-semibold text-white">Ciclo Menstrual</div>
-                <div className="text-sm text-slate-400">Seguimiento y recomendaciones</div>
-              </div>
-              <ChevronRight size={18} className="text-slate-500" />
-            </div>
-          </button>
-        )}
 
         {/* Export */}
         <button
@@ -375,6 +488,16 @@ export default function Profile() {
         <AddWeightModal
           onClose={() => setShowAddWeight(false)}
           onAdd={addWeight}
+          accentColor={accentColor}
+        />
+      )}
+
+      {selectedExercise && (
+        <ExerciseHistorySheet
+          exercise={selectedExercise}
+          history={exerciseHistory}
+          loading={historyLoading}
+          onClose={() => setSelectedExercise(null)}
           accentColor={accentColor}
         />
       )}

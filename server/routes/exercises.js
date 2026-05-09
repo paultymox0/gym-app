@@ -27,6 +27,22 @@ router.get('/history/:userId/:exerciseName', (req, res) => {
   res.json({ history: Object.values(grouped) });
 });
 
+// GET /api/exercises/list/:userId - All distinct exercises the user has logged
+router.get('/list/:userId', (req, res) => {
+  const { userId } = req.params;
+
+  const exercises = db.prepare(`
+    SELECT sl.exercise_name, COUNT(DISTINCT s.id) as session_count, MAX(s.date) as last_date
+    FROM set_logs sl
+    JOIN sessions s ON sl.session_id = s.id
+    WHERE s.user_id = ? AND sl.completed = 1
+    GROUP BY sl.exercise_name
+    ORDER BY sl.exercise_name ASC
+  `).all(parseInt(userId));
+
+  res.json({ exercises });
+});
+
 // GET /api/exercises/pr/:userId - Personal records
 router.get('/pr/:userId', (req, res) => {
   const { userId } = req.params;
