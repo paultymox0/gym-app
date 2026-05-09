@@ -27,7 +27,7 @@ router.get('/history/:userId/:exerciseName', (req, res) => {
   res.json({ history: Object.values(grouped) });
 });
 
-// GET /api/exercises/list/:userId - All distinct exercises the user has logged
+// GET /api/exercises/list/:userId - All distinct exercises logged by the user
 router.get('/list/:userId', (req, res) => {
   const { userId } = req.params;
 
