@@ -14,7 +14,6 @@ router.get('/today/:userId', (req, res) => {
     return res.json({ session: null, dayType: null, exercises: [], isRestDay: true });
   }
 
-  // Check if session exists for today
   let session = db.prepare(
     'SELECT * FROM sessions WHERE user_id = ? AND date = ?'
   ).get(parseInt(userId), today);
@@ -35,7 +34,6 @@ router.get('/today/:userId', (req, res) => {
 router.post('/', (req, res) => {
   const { user_id, date, day_type, notes } = req.body;
 
-  // Check if session already exists
   const existing = db.prepare(
     'SELECT * FROM sessions WHERE user_id = ? AND date = ?'
   ).get(user_id, date);
@@ -53,6 +51,41 @@ router.post('/', (req, res) => {
 
   const session = db.prepare('SELECT * FROM sessions WHERE id = ?').get(result.lastInsertRowid);
   res.status(201).json({ session, sets: [] });
+});
+
+// GET /api/sessions/:id/summary - Session summary for completion screen
+router.get('/:id/summary', (req, res) => {
+  const sessionId = parseInt(req.params.id);
+  const session = db.prepare('SELECT * FROM sessions WHERE id = ?').get(sessionId);
+  if (!session) return res.status(404).json({ error: 'Session not found' });
+
+  const stats = db.prepare(`
+    SELECT
+      SUM(CASE WHEN completed = 1 THEN weight * reps ELSE 0 END) as total_volume,
+      SUM(CASE WHEN completed = 1 THEN 1 ELSE 0 END) as completed_sets
+    FROM set_logs WHERE session_id = ?
+  `).get(sessionId);
+
+  const prevSession = db.prepare(`
+    SELECT * FROM sessions
+    WHERE user_id = ? AND day_type = ? AND date < ? AND completed = 1
+    ORDER BY date DESC LIMIT 1
+  `).get(session.user_id, session.day_type, session.date);
+
+  let prevVolume = 0;
+  if (prevSession) {
+    const prevStats = db.prepare(`
+      SELECT SUM(CASE WHEN completed = 1 THEN weight * reps ELSE 0 END) as total_volume
+      FROM set_logs WHERE session_id = ?
+    `).get(prevSession.id);
+    prevVolume = prevStats?.total_volume || 0;
+  }
+
+  res.json({
+    totalVolume: stats?.total_volume || 0,
+    completedSets: stats?.completed_sets || 0,
+    prevSession: prevSession ? { date: prevSession.date, volume: prevVolume } : null
+  });
 });
 
 // GET /api/sessions/:id
@@ -80,32 +113,48 @@ router.put('/:id', (req, res) => {
   res.json({ session });
 });
 
-// POST /api/sets - Create or update a set log
+// POST /api/sessions/sets/log - Create or update a set log (with PR detection)
 router.post('/sets/log', (req, res) => {
   const { session_id, exercise_name, set_number, weight, reps, completed } = req.body;
+
+  // Get the session's user for PR lookup
+  const session = db.prepare('SELECT user_id FROM sessions WHERE id = ?').get(session_id);
+
+  // Get previous max weight for this exercise (exclude the set being updated)
+  let prevMax = 0;
+  if (session && weight > 0 && completed) {
+    const prResult = db.prepare(`
+      SELECT MAX(sl.weight) as max_weight
+      FROM set_logs sl
+      JOIN sessions s ON sl.session_id = s.id
+      WHERE s.user_id = ? AND sl.exercise_name = ? AND sl.completed = 1
+      AND NOT (sl.session_id = ? AND sl.set_number = ?)
+    `).get(session.user_id, exercise_name, session_id, set_number);
+    prevMax = prResult?.max_weight || 0;
+  }
 
   const existing = db.prepare(
     'SELECT * FROM set_logs WHERE session_id = ? AND exercise_name = ? AND set_number = ?'
   ).get(session_id, exercise_name, set_number);
 
+  let savedSet;
   if (existing) {
     db.prepare(
       'UPDATE set_logs SET weight = ?, reps = ?, completed = ? WHERE id = ?'
     ).run(weight || 0, reps || 0, completed ? 1 : 0, existing.id);
-
-    const updated = db.prepare('SELECT * FROM set_logs WHERE id = ?').get(existing.id);
-    return res.json({ set: updated });
+    savedSet = db.prepare('SELECT * FROM set_logs WHERE id = ?').get(existing.id);
+  } else {
+    const result = db.prepare(
+      'INSERT INTO set_logs (session_id, exercise_name, set_number, weight, reps, completed) VALUES (?, ?, ?, ?, ?, ?)'
+    ).run(session_id, exercise_name, set_number, weight || 0, reps || 0, completed ? 1 : 0);
+    savedSet = db.prepare('SELECT * FROM set_logs WHERE id = ?').get(result.lastInsertRowid);
   }
 
-  const result = db.prepare(
-    'INSERT INTO set_logs (session_id, exercise_name, set_number, weight, reps, completed) VALUES (?, ?, ?, ?, ?, ?)'
-  ).run(session_id, exercise_name, set_number, weight || 0, reps || 0, completed ? 1 : 0);
-
-  const set = db.prepare('SELECT * FROM set_logs WHERE id = ?').get(result.lastInsertRowid);
-  res.status(201).json({ set });
+  const isNewPR = !!(completed && weight > 0 && weight > prevMax);
+  res.json({ set: savedSet, isNewPR, prWeight: weight, prExercise: exercise_name });
 });
 
-// PUT /api/sets/:id
+// PUT /api/sessions/sets/:id
 router.put('/sets/:id', (req, res) => {
   const { weight, reps, completed } = req.body;
   db.prepare(

@@ -84,6 +84,15 @@ function initializeSchema() {
       notes TEXT,
       FOREIGN KEY(user_id) REFERENCES users(id)
     );
+
+    CREATE TABLE IF NOT EXISTS progress_photos (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER,
+      date TEXT,
+      photo_data TEXT,
+      notes TEXT,
+      FOREIGN KEY(user_id) REFERENCES users(id)
+    );
   `);
 
   // Seed users

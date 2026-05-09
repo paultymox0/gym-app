@@ -174,3 +174,79 @@ input, select, textarea {
   transform: rotate(-90deg);
   transform-origin: 50% 50%;
 }
+
+/* Fire flicker animation */
+@keyframes fire-flicker {
+  0%, 100% { transform: scaleY(1) rotate(-3deg); filter: brightness(1); }
+  25%       { transform: scaleY(1.15) rotate(3deg); filter: brightness(1.2); }
+  50%       { transform: scaleY(0.9) rotate(-2deg); filter: brightness(0.9); }
+  75%       { transform: scaleY(1.1) rotate(2deg); filter: brightness(1.1); }
+}
+
+.fire-animated {
+  display: inline-block;
+  animation: fire-flicker 0.7s ease-in-out infinite;
+  transform-origin: center bottom;
+}
+
+/* Bounce in */
+@keyframes bounce-in {
+  0%   { transform: scale(0); opacity: 0; }
+  60%  { transform: scale(1.25); opacity: 1; }
+  80%  { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+
+.bounce-in {
+  animation: bounce-in 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+}
+
+/* Epic glow pulse */
+@keyframes epic-pulse {
+  0%, 100% { opacity: 1; text-shadow: 0 0 10px #F59E0B; }
+  50%       { opacity: 0.85; text-shadow: 0 0 30px #FBBF24, 0 0 60px #F59E0B; }
+}
+
+.epic-glow {
+  animation: epic-pulse 1.5s ease-in-out infinite;
+}
+
+/* Shimmer text */
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.shimmer-gold {
+  background: linear-gradient(90deg, #F59E0B 0%, #FBBF24 40%, #FEF3C7 50%, #FBBF24 60%, #F59E0B 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 2.5s linear infinite;
+}
+
+/* Confetti particle */
+@keyframes confetti-fall {
+  0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(80px) rotate(540deg); opacity: 0; }
+}
+
+.confetti-particle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  animation: confetti-fall 1.2s ease-in forwards;
+}
+
+/* Scale pop */
+@keyframes scale-pop {
+  0%   { transform: scale(0.3); opacity: 0; }
+  70%  { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.scale-pop {
+  animation: scale-pop 0.4s ease forwards;
+}

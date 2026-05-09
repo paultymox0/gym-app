@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { WeightChart, VolumeChart } from '../components/ProgressChart';
 import {
   Scale, Trophy, TrendingUp, Download, LogOut,
-  Plus, ChevronRight, X, History, Search
+  Plus, ChevronRight, X, History, Search, Camera, Trash2, Image
 } from 'lucide-react';
 import SupplementsSection from '../components/SupplementsSection';
 
@@ -83,6 +84,10 @@ function AddWeightModal({ onClose, onAdd, accentColor }) {
 }
 
 function ExerciseHistorySheet({ exercise, history, loading, onClose, accentColor }) {
+  // Compute global max weight for this exercise to show trophy
+  const allWeights = history.flatMap(s => s.sets.filter(s => s.completed && s.weight > 0).map(s => s.weight));
+  const maxWeight = allWeights.length > 0 ? Math.max(...allWeights) : 0;
+
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm"
          onClick={e => e.target === e.currentTarget && onClose()}>
@@ -90,6 +95,11 @@ function ExerciseHistorySheet({ exercise, history, loading, onClose, accentColor
         <div className="flex items-center justify-between p-5 border-b border-white/5 shrink-0">
           <div>
             <h3 className="text-lg font-bold text-white">{exercise}</h3>
+            {!loading && maxWeight > 0 && (
+              <p className="text-xs text-amber-400 mt-0.5 flex items-center gap-1">
+                🏆 Récord: {maxWeight}kg
+              </p>
+            )}
             {!loading && (
               <p className="text-xs text-slate-500 mt-0.5">
                 {history.length} sesión{history.length !== 1 ? 'es' : ''} registrada{history.length !== 1 ? 's' : ''}
@@ -112,22 +122,42 @@ function ExerciseHistorySheet({ exercise, history, loading, onClose, accentColor
             history.map((session, i) => {
               const completedSets = session.sets.filter(s => s.completed);
               if (completedSets.length === 0) return null;
+              const sessionMax = Math.max(...completedSets.filter(s => s.weight > 0).map(s => s.weight), 0);
+              const isPRSession = sessionMax > 0 && sessionMax === maxWeight;
               return (
-                <div key={i} className="bg-[#07070F] rounded-2xl p-4">
-                  <div className="text-xs font-semibold mb-3" style={{ color: accentColor }}>
-                    {formatDate(session.date)}
+                <div
+                  key={i}
+                  className="rounded-2xl p-4"
+                  style={{
+                    backgroundColor: isPRSession ? '#F59E0B10' : '#07070F',
+                    border: isPRSession ? '1px solid #F59E0B30' : 'none'
+                  }}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="text-xs font-semibold" style={{ color: accentColor }}>
+                      {formatDate(session.date)}
+                    </div>
+                    {isPRSession && (
+                      <span className="text-xs text-amber-400 font-bold flex items-center gap-1">
+                        🏆 PR
+                      </span>
+                    )}
                   </div>
                   <div className="space-y-2">
-                    {completedSets.map((set, j) => (
-                      <div key={j} className="flex items-center gap-2 text-sm">
-                        <span className="text-slate-500 w-14 shrink-0 text-xs">Serie {set.set_number}</span>
-                        <span className="text-white font-bold">
-                          {set.weight > 0 ? `${set.weight}kg` : 'PC'}
-                        </span>
-                        <span className="text-slate-500">×</span>
-                        <span className="text-white font-bold">{set.reps} reps</span>
-                      </div>
-                    ))}
+                    {completedSets.map((set, j) => {
+                      const isSetPR = set.weight > 0 && set.weight === maxWeight;
+                      return (
+                        <div key={j} className="flex items-center gap-2 text-sm">
+                          <span className="text-slate-500 w-14 shrink-0 text-xs">Serie {set.set_number}</span>
+                          <span className={`font-bold ${isSetPR ? 'text-amber-400' : 'text-white'}`}>
+                            {set.weight > 0 ? `${set.weight}kg` : 'PC'}
+                          </span>
+                          {isSetPR && <span className="text-xs">🏆</span>}
+                          <span className="text-slate-500">×</span>
+                          <span className="text-white font-bold">{set.reps} reps</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               );
@@ -135,6 +165,213 @@ function ExerciseHistorySheet({ exercise, history, loading, onClose, accentColor
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+// ─── Progress Photos ──────────────────────────────────────────────────────────
+function PhotoCard({ photo, onDelete }) {
+  const [showFull, setShowFull] = useState(false);
+
+  return (
+    <div className="relative aspect-square rounded-2xl overflow-hidden bg-[#0E1520] border border-white/8">
+      {photo.thumb ? (
+        <img
+          src={photo.thumb}
+          alt={photo.date}
+          className="w-full h-full object-cover cursor-pointer active:scale-95 transition-all"
+          onClick={() => setShowFull(true)}
+        />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center text-slate-600">
+          <Image size={24} />
+        </div>
+      )}
+      <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-2 py-1 pointer-events-none">
+        <div className="text-xs text-white">{formatDateShort(photo.date)}</div>
+      </div>
+      <button
+        onClick={() => onDelete(photo.id)}
+        className="absolute top-1.5 right-1.5 w-6 h-6 bg-black/70 rounded-full flex items-center justify-center text-red-400 active:scale-90"
+      >
+        <Trash2 size={12} />
+      </button>
+
+      {showFull && photo.thumb && createPortal(
+        <div
+          className="fixed inset-0 z-50 bg-black/92 flex items-center justify-center p-4"
+          style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}
+          onClick={() => setShowFull(false)}
+        >
+          <img
+            src={photo.thumb}
+            alt={photo.date}
+            className="max-w-full max-h-full rounded-2xl object-contain"
+            onClick={e => e.stopPropagation()}
+          />
+          <button
+            onClick={() => setShowFull(false)}
+            className="absolute top-4 right-4 w-10 h-10 bg-white/10 rounded-full flex items-center justify-center"
+            style={{ marginTop: 'env(safe-area-inset-top)' }}
+          >
+            <X size={20} className="text-white" />
+          </button>
+          <div className="absolute bottom-8 left-0 right-0 text-center text-slate-400 text-sm">
+            {formatDateShort(photo.date)}
+          </div>
+        </div>,
+        document.body
+      )}
+    </div>
+  );
+}
+
+function ProgressPhotosSection({ accentColor }) {
+  const { user, apiCall } = useAuth();
+  const [photos, setPhotos] = useState([]);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    if (user) fetchPhotos();
+  }, [user]);
+
+  async function fetchPhotos() {
+    try {
+      const res = await apiCall(`/photos/${user.id}`);
+      if (res.ok) {
+        const data = await res.json();
+        // Load all photo data
+        const photosWithData = await Promise.all(
+          data.photos.map(async p => {
+            const dataRes = await apiCall(`/photos/${user.id}/${p.id}/data`);
+            if (dataRes.ok) {
+              const d = await dataRes.json();
+              return { ...p, user_id: user.id, thumb: d.photo_data };
+            }
+            return { ...p, user_id: user.id };
+          })
+        );
+        setPhotos(photosWithData);
+      }
+    } catch (err) {
+      console.error('Error fetching photos:', err);
+    }
+  }
+
+  function resizeImage(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = new window.Image();
+        img.onload = () => {
+          const MAX = 900;
+          let { width, height } = img;
+          if (width > MAX || height > MAX) {
+            if (width > height) { height = Math.round((height * MAX) / width); width = MAX; }
+            else { width = Math.round((width * MAX) / height); height = MAX; }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', 0.78));
+        };
+        img.onerror = reject;
+        img.src = e.target.result;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function handleFileChange(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const photoData = await resizeImage(file);
+      const res = await apiCall('/photos', {
+        method: 'POST',
+        body: JSON.stringify({ user_id: user.id, photo_data: photoData, notes: '' })
+      });
+      if (res.ok) await fetchPhotos();
+    } catch (err) {
+      console.error('Error uploading photo:', err);
+    }
+    setUploading(false);
+    e.target.value = '';
+  }
+
+  async function deletePhoto(id) {
+    try {
+      await apiCall(`/photos/${id}`, { method: 'DELETE' });
+      setPhotos(prev => prev.filter(p => p.id !== id));
+    } catch (err) {
+      console.error('Error deleting photo:', err);
+    }
+  }
+
+  return (
+    <div className="card">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <Camera size={18} style={{ color: accentColor }} />
+          <h3 className="font-semibold text-white">Fotos de Progreso</h3>
+        </div>
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploading}
+          className="flex items-center gap-1 text-sm font-semibold active:scale-95 disabled:opacity-50"
+          style={{ color: accentColor }}
+        >
+          {uploading ? (
+            <div className="w-4 h-4 border-2 border-current/30 border-t-current rounded-full animate-spin" />
+          ) : (
+            <Plus size={14} />
+          )}
+          {uploading ? 'Subiendo…' : 'Añadir'}
+        </button>
+      </div>
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+        onChange={handleFileChange}
+      />
+
+      {photos.length === 0 ? (
+        <div className="text-center py-6">
+          <Camera size={40} className="mx-auto text-slate-700 mb-3" />
+          <p className="text-slate-500 text-sm">Documenta tu progreso</p>
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="mt-2 text-sm font-semibold active:scale-95"
+            style={{ color: accentColor }}
+          >
+            Añadir primera foto
+          </button>
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-3 gap-2">
+            {photos.map(photo => (
+              <PhotoCard
+                key={photo.id}
+                photo={photo}
+                onDelete={deletePhoto}
+                accentColor={accentColor}
+              />
+            ))}
+          </div>
+          <p className="text-xs text-slate-600 text-center mt-3">
+            {photos.length} foto{photos.length !== 1 ? 's' : ''} · Toca para ampliar
+          </p>
+        </>
+      )}
     </div>
   );
 }
@@ -362,11 +599,7 @@ export default function Profile() {
             </div>
           )}
 
-          <WeightChart
-            data={weightData}
-            color={accentColor}
-            goalWeight={user?.weight_goal}
-          />
+          <WeightChart data={weightData} color={accentColor} goalWeight={user?.weight_goal} />
 
           {weightData.length === 0 && (
             <div className="text-center py-4">
@@ -408,14 +641,18 @@ export default function Profile() {
                     <span className="text-amber-400 text-sm font-bold">#{i + 1}</span>
                     <span className="text-white text-sm font-medium">{pr.exercise_name}</span>
                   </div>
-                  <span className="font-bold" style={{ color: accentColor }}>
-                    {pr.max_weight}kg
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-bold" style={{ color: accentColor }}>{pr.max_weight}kg</span>
+                    {i === 0 && <span className="text-xs">🏆</span>}
+                  </div>
                 </div>
               ))}
             </div>
           </div>
         )}
+
+        {/* Progress photos */}
+        <ProgressPhotosSection accentColor={accentColor} />
 
         {/* Exercise history */}
         <div className="card">

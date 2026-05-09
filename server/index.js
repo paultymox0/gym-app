@@ -17,8 +17,8 @@ if (!IS_PROD) {
     credentials: true
   }));
 }
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Routes
 const authRoutes = require('./routes/auth');
@@ -30,6 +30,7 @@ const supplementRoutes = require('./routes/supplements');
 const cycleRoutes = require('./routes/cycle');
 const exportRoutes = require('./routes/export');
 const statsRoutes = require('./routes/stats');
+const photosRoutes = require('./routes/photos');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/sessions', sessionRoutes);
@@ -40,6 +41,7 @@ app.use('/api/supplements', supplementRoutes);
 app.use('/api/cycle', cycleRoutes);
 app.use('/api/export', exportRoutes);
 app.use('/api/stats', statsRoutes);
+app.use('/api/photos', photosRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
