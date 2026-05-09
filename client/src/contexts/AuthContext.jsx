@@ -52,6 +52,31 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
+  const loginDirect = useCallback(async (username) => {
+    try {
+      const res = await fetch(`${API_BASE}/auth/login-direct`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Error al iniciar sesión');
+      }
+
+      setToken(data.token);
+      setUser(data.user);
+      localStorage.setItem('gym_token', data.token);
+      localStorage.setItem('gym_user', JSON.stringify(data.user));
+
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  }, []);
+
   const logout = useCallback(async () => {
     try {
       await fetch(`${API_BASE}/auth/logout`, {
@@ -94,6 +119,7 @@ export function AuthProvider({ children }) {
     token,
     loading,
     login,
+    loginDirect,
     logout,
     apiCall,
     isAuthenticated: !!user

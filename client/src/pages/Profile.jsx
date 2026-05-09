@@ -21,10 +21,10 @@ function AddWeightModal({ onClose, onAdd, accentColor }) {
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm"
          onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="bg-[#1E293B] rounded-t-3xl w-full max-w-md p-6 slide-up">
+      <div className="bg-[#0D1422] rounded-t-3xl w-full max-w-md p-6 slide-up">
         <div className="flex items-center justify-between mb-5">
           <h3 className="text-lg font-bold text-white">Registrar Peso</h3>
-          <button onClick={onClose} className="p-2 rounded-xl bg-[#0F172A] text-slate-400 active:scale-90">
+          <button onClick={onClose} className="p-2 rounded-xl bg-[#07070F] text-slate-400 active:scale-90">
             <X size={18} />
           </button>
         </div>
@@ -171,14 +171,14 @@ export default function Profile() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#0F172A]">
-        <div className="w-8 h-8 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
+      <div className="flex items-center justify-center min-h-screen bg-[#07070F]">
+        <div className="w-8 h-8 border-2 border-white/10 border-t-white/50 rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0F172A] pb-24 fade-in">
+    <div className="min-h-screen bg-[#07070F] pb-24 fade-in">
       {/* Header */}
       <div className="px-4 pt-6 pb-4" style={{ paddingTop: `calc(env(safe-area-inset-top) + 1.5rem)` }}>
         <div className="flex items-center justify-between">
@@ -340,7 +340,7 @@ export default function Profile() {
             </div>
             <div className="space-y-2">
               {stats.prs.slice(0, 6).map((pr, i) => (
-                <div key={i} className="flex items-center justify-between p-2.5 rounded-xl bg-[#0F172A]">
+                <div key={i} className="flex items-center justify-between p-2.5 rounded-xl bg-[#07070F]">
                   <div className="flex items-center gap-2">
                     <span className="text-amber-400 text-sm font-bold">#{i + 1}</span>
                     <span className="text-white text-sm font-medium">{pr.exercise_name}</span>
@@ -365,7 +365,7 @@ export default function Profile() {
               <button
                 key={supp.name}
                 onClick={() => toggleSupplement(supp.name, supp.taken)}
-                className="w-full flex items-center gap-3 p-3 rounded-xl bg-[#0F172A] active:scale-[0.98] transition-all"
+                className="w-full flex items-center gap-3 p-3 rounded-xl bg-[#07070F] active:scale-[0.98] transition-all"
               >
                 <div
                   className="w-7 h-7 rounded-xl flex items-center justify-center transition-all text-white shrink-0"

@@ -85,12 +85,12 @@ function initializeSchema() {
 
     db.prepare(`
       INSERT INTO users (id, username, password, name, gender, age, height, weight_start, weight_goal, calories_goal, color)
-      VALUES (1, 'timmy', ?, 'Timmy', 'male', 26, 1.75, 68, 71, 3000, '#3B82F6')
+      VALUES (1, 'timmy', ?, 'Timmy', 'male', 26, 1.75, 68, 71, 3000, '#00FF88')
     `).run(timmyHash);
 
     db.prepare(`
       INSERT INTO users (id, username, password, name, gender, age, height, weight_start, weight_goal, calories_goal, color)
-      VALUES (2, 'andrea', ?, 'Andrea', 'female', 28, 1.45, 50, 47.5, 1400, '#EC4899')
+      VALUES (2, 'andrea', ?, 'Andrea', 'female', 28, 1.45, 50, 47.5, 1400, '#BF5FFF')
     `).run(andreaHash);
 
     console.log('Users seeded: timmy (timmy123) and andrea (andrea123)');

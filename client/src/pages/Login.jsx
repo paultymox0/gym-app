@@ -1,134 +1,146 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { Dumbbell, Eye, EyeOff, AlertCircle } from 'lucide-react';
 
 const USERS = [
-  { username: 'timmy', name: 'Timmy', color: '#3B82F6', emoji: '💪', desc: '68kg → 71kg • 3000 kcal/día' },
-  { username: 'andrea', name: 'Andrea', color: '#EC4899', emoji: '🌸', desc: '50kg → 47-48kg • 1400 kcal/día' }
+  {
+    username: 'timmy',
+    name: 'Timmy',
+    emoji: '💪',
+    bg: '#0D1F0D',
+    accent: '#00FF88',
+    ledClass: 'led-wrapper-green',
+    desc: '68 → 71 kg',
+  },
+  {
+    username: 'andrea',
+    name: 'Andrea',
+    emoji: '🌸',
+    bg: '#1A0D2E',
+    accent: '#BF5FFF',
+    ledClass: 'led-wrapper-purple',
+    desc: '50 → 47 kg',
+  },
 ];
 
 export default function Login() {
-  const { login } = useAuth();
-  const [selected, setSelected] = useState(null);
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const { loginDirect } = useAuth();
+  const [loading, setLoading] = useState(null);
 
-  const handleSelectUser = (user) => {
-    setSelected(user);
-    setPassword('');
-    setError('');
-  };
-
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    if (!selected || !password) return;
-
-    setLoading(true);
-    setError('');
-
-    const result = await login(selected.username, password);
-
-    if (!result.success) {
-      setError(result.error || 'Error al iniciar sesión');
-    }
-
-    setLoading(false);
+  const handleSelect = async (user) => {
+    if (loading) return;
+    setLoading(user.username);
+    await loginDirect(user.username);
+    setLoading(null);
   };
 
   return (
-    <div className="min-h-screen bg-[#0F172A] flex flex-col items-center justify-center p-6 fade-in">
-      {/* Logo */}
-      <div className="flex flex-col items-center mb-10">
-        <div className="w-20 h-20 bg-[#1E293B] rounded-3xl flex items-center justify-center mb-4 shadow-2xl">
-          <Dumbbell size={40} className="text-blue-400" />
-        </div>
-        <h1 className="text-3xl font-bold text-white">GymApp</h1>
-        <p className="text-slate-400 mt-1">Entrena. Nutre. Mejora.</p>
-      </div>
-
-      {/* User selection */}
-      <div className="w-full max-w-sm">
-        <p className="text-slate-400 text-sm mb-3 text-center">¿Quién entrena hoy?</p>
-
-        <div className="grid grid-cols-2 gap-3 mb-6">
-          {USERS.map(user => (
-            <button
-              key={user.username}
-              onClick={() => handleSelectUser(user)}
-              className={`p-4 rounded-2xl border-2 text-left transition-all active:scale-95 ${
-                selected?.username === user.username
-                  ? 'border-2 bg-[#1E293B]'
-                  : 'border-[#334155] bg-[#1E293B] opacity-70'
-              }`}
-              style={{
-                borderColor: selected?.username === user.username ? user.color : '#334155'
-              }}
-            >
-              <div className="text-3xl mb-2">{user.emoji}</div>
-              <div className="font-bold text-white text-lg">{user.name}</div>
-              <div className="text-xs text-slate-400 mt-1 leading-tight">{user.desc}</div>
-            </button>
-          ))}
-        </div>
-
-        {/* Password form */}
-        {selected && (
-          <form onSubmit={handleLogin} className="fade-in">
-            <div className="mb-4">
-              <label className="block text-sm text-slate-400 mb-2">
-                Contraseña para {selected.name}
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  placeholder="Introduce tu contraseña"
-                  className="input-dark pr-12"
-                  autoFocus
-                  autoComplete="current-password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 p-1"
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-            </div>
-
-            {error && (
-              <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/30 rounded-xl p-3 mb-4">
-                <AlertCircle size={16} className="text-red-400 shrink-0" />
-                <p className="text-red-400 text-sm">{error}</p>
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={loading || !password}
-              className="w-full py-4 rounded-2xl text-white font-bold text-lg transition-all active:scale-95 disabled:opacity-50"
-              style={{ backgroundColor: selected?.color || '#3B82F6' }}
-            >
-              {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Entrando...
-                </span>
-              ) : (
-                `Entrar como ${selected.name}`
-              )}
-            </button>
-          </form>
-        )}
-
-        <p className="text-center text-slate-600 text-xs mt-8">
-          GymApp v1.0 • Timmy & Andrea
+    <div
+      style={{
+        minHeight: '100svh',
+        background: '#07070F',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '24px',
+      }}
+    >
+      {/* Header */}
+      <div style={{ textAlign: 'center', marginBottom: '52px' }}>
+        <div style={{ fontSize: '52px', lineHeight: 1, marginBottom: '14px' }}>🏋️</div>
+        <h1
+          style={{
+            fontSize: '30px',
+            fontWeight: '800',
+            color: '#ffffff',
+            letterSpacing: '-0.5px',
+            margin: 0,
+          }}
+        >
+          GymApp
+        </h1>
+        <p style={{ color: '#555', marginTop: '6px', fontSize: '13px', letterSpacing: '0.5px' }}>
+          ¿Quién entrena hoy?
         </p>
       </div>
+
+      {/* Profile cards */}
+      <div
+        style={{
+          display: 'flex',
+          gap: '16px',
+          width: '100%',
+          maxWidth: '380px',
+        }}
+      >
+        {USERS.map((user) => (
+          <div key={user.username} className={user.ledClass} style={{ flex: 1 }}>
+            <button
+              className="profile-card"
+              onClick={() => handleSelect(user)}
+              disabled={!!loading}
+              style={{
+                width: '100%',
+                height: '220px',
+                background: user.bg,
+                border: 'none',
+                borderRadius: '22px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: loading ? 'default' : 'pointer',
+                position: 'relative',
+                zIndex: 1,
+                padding: 0,
+              }}
+            >
+              {loading === user.username ? (
+                <div
+                  style={{
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '50%',
+                    border: `3px solid ${user.accent}25`,
+                    borderTop: `3px solid ${user.accent}`,
+                    animation: 'led-rotate 0.75s linear infinite',
+                  }}
+                />
+              ) : (
+                <>
+                  <div style={{ fontSize: '52px', lineHeight: 1, marginBottom: '14px' }}>
+                    {user.emoji}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: '24px',
+                      fontWeight: '800',
+                      color: user.accent,
+                      letterSpacing: '-0.3px',
+                    }}
+                  >
+                    {user.name}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: '11px',
+                      color: `${user.accent}70`,
+                      marginTop: '7px',
+                      letterSpacing: '0.3px',
+                    }}
+                  >
+                    {user.desc}
+                  </div>
+                </>
+              )}
+            </button>
+          </div>
+        ))}
+      </div>
+
+      <p style={{ color: '#2a2a2a', fontSize: '11px', marginTop: '52px' }}>
+        GymApp v1.0 • Timmy & Andrea
+      </p>
     </div>
   );
 }

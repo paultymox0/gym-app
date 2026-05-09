@@ -13,7 +13,7 @@
   }
 
   body {
-    background-color: #0F172A;
+    background-color: #07070F;
     color: #F1F5F9;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
@@ -32,7 +32,13 @@
 
 @layer components {
   .card {
-    @apply bg-[#1E293B] rounded-2xl p-4;
+    background: #0E1520;
+    border-radius: 18px;
+    padding: 16px;
+    border: 1px solid rgba(255,255,255,0.06);
+    box-shadow: 0 0 0 1px var(--accent-faint, transparent),
+                0 4px 24px rgba(0,0,0,0.4);
+    transition: box-shadow 0.2s ease;
   }
 
   .btn-primary {
@@ -40,7 +46,19 @@
   }
 
   .input-dark {
-    @apply bg-[#0F172A] border border-[#334155] rounded-xl px-3 py-2 text-white w-full focus:outline-none focus:border-blue-500 transition-colors;
+    background: #080C14;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 8px 12px;
+    color: white;
+    width: 100%;
+    font-size: 16px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+  }
+  .input-dark:focus {
+    border-color: var(--accent, #00FF88);
+    box-shadow: 0 0 0 3px var(--accent-dim, #00FF8830);
   }
 }
 
@@ -79,6 +97,65 @@ input, select, textarea {
 
 .slide-up {
   animation: slideUp 0.3s ease;
+}
+
+/* LED border animation */
+@keyframes led-rotate {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.led-wrapper-green {
+  position: relative;
+  padding: 2px;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 0 28px #00FF8830, 0 0 56px #00FF8815;
+}
+
+.led-wrapper-green::before {
+  content: '';
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  top: -50%;
+  left: -50%;
+  background: conic-gradient(from 0deg, transparent 0deg, #00FF88 55deg, #ccffe8 75deg, transparent 110deg);
+  animation: led-rotate 2.5s linear infinite;
+}
+
+.led-wrapper-purple {
+  position: relative;
+  padding: 2px;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 0 28px #BF5FFF30, 0 0 56px #BF5FFF15;
+}
+
+.led-wrapper-purple::before {
+  content: '';
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  top: -50%;
+  left: -50%;
+  background: conic-gradient(from 0deg, transparent 0deg, #BF5FFF 55deg, #e8c0ff 75deg, transparent 110deg);
+  animation: led-rotate 2.5s linear infinite;
+}
+
+.profile-card {
+  transition: transform 0.15s ease, filter 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.profile-card:active {
+  transform: scale(0.94);
+}
+
+@media (hover: hover) {
+  .profile-card:hover {
+    filter: brightness(1.12);
+  }
 }
 
 /* Progress ring */

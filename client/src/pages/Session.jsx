@@ -30,7 +30,7 @@ function SetRow({ set, setNumber, onUpdate, accentColor, isTime }) {
 
   return (
     <div className={`flex items-center gap-2 p-2.5 rounded-xl transition-all ${
-      set.completed ? 'bg-green-500/10' : 'bg-[#0F172A]'
+      set.completed ? 'bg-green-500/10' : 'bg-[#07070F]'
     }`}>
       <div
         className="w-7 h-7 rounded-lg flex items-center justify-center text-sm font-bold shrink-0"
@@ -187,7 +187,7 @@ function ExerciseCard({ exercise, sessionId, userId, savedSets, onSetUpdate, acc
           {/* Rest timer button */}
           <button
             onClick={() => setShowTimer(true)}
-            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[#0F172A] text-slate-400 text-sm active:scale-95 transition-all mt-2"
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[#07070F] text-slate-400 text-sm active:scale-95 transition-all mt-2"
           >
             <Clock size={15} />
             Iniciar descanso {exercise.rest && `(${exercise.rest}s)`}
@@ -324,15 +324,15 @@ export default function Session() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#0F172A]">
-        <div className="w-8 h-8 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
+      <div className="flex items-center justify-center min-h-screen bg-[#07070F]">
+        <div className="w-8 h-8 border-2 border-white/10 border-t-white/50 rounded-full animate-spin" />
       </div>
     );
   }
 
   if (todayData?.isRestDay) {
     return (
-      <div className="min-h-screen bg-[#0F172A] flex flex-col items-center justify-center p-6 fade-in">
+      <div className="min-h-screen bg-[#07070F] flex flex-col items-center justify-center p-6 fade-in">
         <Moon size={64} className="text-slate-600 mb-4" />
         <h2 className="text-2xl font-bold text-white mb-2">Día de Descanso</h2>
         <p className="text-slate-400 text-center max-w-xs">
@@ -350,9 +350,9 @@ export default function Session() {
   const dayName = DAY_NAMES[todayData?.dayType] || 'Entrenamiento';
 
   return (
-    <div className="min-h-screen bg-[#0F172A] pb-32 fade-in">
+    <div className="min-h-screen bg-[#07070F] pb-32 fade-in">
       {/* Header */}
-      <div className="px-4 pt-6 pb-4 sticky top-0 bg-[#0F172A]/95 backdrop-blur z-10"
+      <div className="px-4 pt-6 pb-4 sticky top-0 bg-[#07070F]/95 backdrop-blur z-10"
            style={{ paddingTop: `calc(env(safe-area-inset-top) + 1.5rem)` }}>
         <div className="flex items-center justify-between">
           <div>

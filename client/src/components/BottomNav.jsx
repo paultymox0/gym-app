@@ -18,8 +18,15 @@ export default function BottomNav() {
   const accentColor = user?.color || '#3B82F6';
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-[#1E293B] border-t border-[#334155]"
-         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+    <nav
+      className="fixed bottom-0 left-0 right-0 z-50"
+      style={{
+        background: '#0A0A14',
+        borderTop: `1px solid ${accentColor}18`,
+        boxShadow: `0 -4px 32px ${accentColor}10`,
+        paddingBottom: 'env(safe-area-inset-bottom)',
+      }}
+    >
       <div className="flex items-center justify-around h-16 max-w-md mx-auto">
         {navItems.map(({ path, label, icon: Icon }) => {
           const isActive = location.pathname === path;
@@ -29,14 +36,24 @@ export default function BottomNav() {
               onClick={() => navigate(path)}
               className="flex flex-col items-center justify-center flex-1 h-full gap-1 transition-all active:scale-90"
             >
-              <Icon
-                size={22}
-                style={{ color: isActive ? accentColor : '#64748B' }}
-                strokeWidth={isActive ? 2.5 : 1.5}
-              />
+              <div
+                style={{
+                  filter: isActive ? `drop-shadow(0 0 6px ${accentColor})` : 'none',
+                  transition: 'filter 0.2s ease',
+                }}
+              >
+                <Icon
+                  size={22}
+                  style={{ color: isActive ? accentColor : '#3D4A5C' }}
+                  strokeWidth={isActive ? 2.5 : 1.5}
+                />
+              </div>
               <span
                 className="text-xs font-medium"
-                style={{ color: isActive ? accentColor : '#64748B' }}
+                style={{
+                  color: isActive ? accentColor : '#3D4A5C',
+                  textShadow: isActive ? `0 0 8px ${accentColor}80` : 'none',
+                }}
               >
                 {label}
               </span>

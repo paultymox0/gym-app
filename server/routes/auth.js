@@ -39,6 +39,31 @@ router.post('/login', (req, res) => {
   });
 });
 
+// POST /api/auth/login-direct (no password — personal app)
+router.post('/login-direct', (req, res) => {
+  const { username } = req.body;
+
+  if (!username) {
+    return res.status(400).json({ error: 'Username required' });
+  }
+
+  const user = db.prepare('SELECT * FROM users WHERE username = ?').get(username.toLowerCase());
+
+  if (!user) {
+    return res.status(404).json({ error: 'Usuario no encontrado' });
+  }
+
+  const token = jwt.sign(
+    { userId: user.id, username: user.username },
+    JWT_SECRET,
+    { expiresIn: '30d' }
+  );
+
+  const { password: _, ...userWithoutPassword } = user;
+
+  res.json({ token, user: userWithoutPassword });
+});
+
 // POST /api/auth/logout
 router.post('/logout', (req, res) => {
   res.json({ message: 'Logged out successfully' });

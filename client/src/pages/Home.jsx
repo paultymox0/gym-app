@@ -114,8 +114,8 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#0F172A]">
-        <div className="w-8 h-8 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
+      <div className="flex items-center justify-center min-h-screen bg-[#07070F]">
+        <div className="w-8 h-8 border-2 border-white/10 border-t-white/50 rounded-full animate-spin" />
       </div>
     );
   }
@@ -126,7 +126,7 @@ export default function Home() {
   const supplementsTotal = supplements.length;
 
   return (
-    <div className="min-h-screen bg-[#0F172A] pb-24 fade-in">
+    <div className="min-h-screen bg-[#07070F] pb-24 fade-in">
       {/* Header */}
       <div className="px-4 pt-6 pb-4" style={{ paddingTop: `calc(env(safe-area-inset-top) + 1.5rem)` }}>
         <div className="flex items-center justify-between">
@@ -276,11 +276,11 @@ export default function Home() {
               <button
                 key={supp.name}
                 onClick={() => toggleSupplement(supp.name, supp.taken)}
-                className="w-full flex items-center gap-3 p-3 rounded-xl bg-[#0F172A] active:scale-[0.98] transition-all"
+                className="w-full flex items-center gap-3 p-3 rounded-xl bg-[#07070F] active:scale-[0.98] transition-all"
               >
                 <div
                   className={`w-7 h-7 rounded-xl flex items-center justify-center transition-all ${
-                    supp.taken ? 'text-white' : 'bg-[#1E293B]'
+                    supp.taken ? 'text-white' : 'bg-[#0D1422]'
                   }`}
                   style={{ backgroundColor: supp.taken ? accentColor : undefined }}
                 >

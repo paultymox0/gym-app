@@ -24,10 +24,10 @@ function DayMarkerModal({ onClose, onAdd, accentColor }) {
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm"
          onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="bg-[#1E293B] rounded-t-3xl w-full max-w-md p-6 slide-up">
+      <div className="bg-[#0D1422] rounded-t-3xl w-full max-w-md p-6 slide-up">
         <div className="flex items-center justify-between mb-5">
           <h3 className="text-lg font-bold text-white">Marcar Día 1 del Ciclo</h3>
-          <button onClick={onClose} className="p-2 rounded-xl bg-[#0F172A] text-slate-400">
+          <button onClick={onClose} className="p-2 rounded-xl bg-[#07070F] text-slate-400">
             <X size={18} />
           </button>
         </div>
@@ -170,7 +170,7 @@ export default function CyclePage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#0F172A]">
+      <div className="flex items-center justify-center min-h-screen bg-[#07070F]">
         <div className="w-8 h-8 border-2 border-pink-500/30 border-t-pink-500 rounded-full animate-spin" />
       </div>
     );
@@ -179,13 +179,13 @@ export default function CyclePage() {
   const phase = cycleData?.currentPhase;
 
   return (
-    <div className="min-h-screen bg-[#0F172A] pb-24 fade-in">
+    <div className="min-h-screen bg-[#07070F] pb-24 fade-in">
       {/* Header */}
       <div className="px-4 pt-6 pb-4" style={{ paddingTop: `calc(env(safe-area-inset-top) + 1.5rem)` }}>
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate('/profile')}
-            className="p-2 rounded-xl bg-[#1E293B] text-slate-400 active:scale-90"
+            className="p-2 rounded-xl bg-[#0D1422] text-slate-400 active:scale-90"
           >
             <ChevronLeft size={20} />
           </button>
@@ -312,7 +312,7 @@ export default function CyclePage() {
                 }
 
                 return (
-                  <div key={cycle.id} className="flex items-center justify-between p-3 rounded-xl bg-[#0F172A]">
+                  <div key={cycle.id} className="flex items-center justify-between p-3 rounded-xl bg-[#07070F]">
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="text-pink-400 text-sm">🔴 Día 1</span>
@@ -368,7 +368,7 @@ export default function CyclePage() {
               { phase: 'Lútea', days: 'Días 17-21', color: '#8B5CF6', icon: '🌙' },
               { phase: 'Lútea tardía', days: 'Días 22-28', color: '#F97316', icon: '⚠️' }
             ].map(p => (
-              <div key={p.phase} className="flex items-center gap-3 p-2.5 rounded-xl bg-[#0F172A]">
+              <div key={p.phase} className="flex items-center gap-3 p-2.5 rounded-xl bg-[#07070F]">
                 <span className="text-xl">{p.icon}</span>
                 <div>
                   <span className="font-medium text-sm" style={{ color: p.color }}>{p.phase}</span>

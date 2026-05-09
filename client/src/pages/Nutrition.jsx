@@ -11,7 +11,7 @@ function MacroBar({ label, value, max, color }) {
         <span className="text-slate-400">{label}</span>
         <span className="font-semibold" style={{ color }}>{value.toFixed(0)}g</span>
       </div>
-      <div className="h-2 bg-[#0F172A] rounded-full overflow-hidden">
+      <div className="h-2 bg-[#07070F] rounded-full overflow-hidden">
         <div
           className="h-full rounded-full transition-all duration-500"
           style={{ width: `${percentage}%`, backgroundColor: color }}
@@ -53,10 +53,10 @@ function AddMealModal({ onClose, onAdd, accentColor }) {
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm"
          onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="bg-[#1E293B] rounded-t-3xl w-full max-w-md p-6 slide-up">
+      <div className="bg-[#0D1422] rounded-t-3xl w-full max-w-md p-6 slide-up">
         <div className="flex items-center justify-between mb-5">
           <h3 className="text-lg font-bold text-white">Añadir Comida</h3>
-          <button onClick={onClose} className="p-2 rounded-xl bg-[#0F172A] text-slate-400 active:scale-90">
+          <button onClick={onClose} className="p-2 rounded-xl bg-[#07070F] text-slate-400 active:scale-90">
             <X size={18} />
           </button>
         </div>
@@ -212,7 +212,7 @@ export default function Nutrition() {
   const carbsGoal = user?.gender === 'male' ? 350 : 150;
 
   return (
-    <div className="min-h-screen bg-[#0F172A] pb-24 fade-in">
+    <div className="min-h-screen bg-[#07070F] pb-24 fade-in">
       {/* Header */}
       <div className="px-4 pt-6 pb-4" style={{ paddingTop: `calc(env(safe-area-inset-top) + 1.5rem)` }}>
         <div className="flex items-center justify-between mb-4">
@@ -228,7 +228,7 @@ export default function Nutrition() {
 
         {/* Date navigation */}
         <div className="flex items-center gap-3">
-          <button onClick={() => changeDate(-1)} className="p-2 rounded-xl bg-[#1E293B] text-slate-400 active:scale-90">
+          <button onClick={() => changeDate(-1)} className="p-2 rounded-xl bg-[#0D1422] text-slate-400 active:scale-90">
             <ChevronLeft size={18} />
           </button>
           <div className="flex-1 text-center">
@@ -236,7 +236,7 @@ export default function Nutrition() {
             {currentDate !== new Date().toISOString().split('T')[0] && (
               <button
                 onClick={() => setCurrentDate(new Date().toISOString().split('T')[0])}
-                className="ml-2 text-xs px-2 py-0.5 rounded-lg bg-[#1E293B] text-slate-400"
+                className="ml-2 text-xs px-2 py-0.5 rounded-lg bg-[#0D1422] text-slate-400"
               >
                 Hoy
               </button>
@@ -245,7 +245,7 @@ export default function Nutrition() {
           <button
             onClick={() => changeDate(1)}
             disabled={currentDate >= new Date().toISOString().split('T')[0]}
-            className="p-2 rounded-xl bg-[#1E293B] text-slate-400 active:scale-90 disabled:opacity-30"
+            className="p-2 rounded-xl bg-[#0D1422] text-slate-400 active:scale-90 disabled:opacity-30"
           >
             <ChevronRight size={18} />
           </button>
@@ -274,7 +274,7 @@ export default function Nutrition() {
           </div>
 
           {/* Progress bar */}
-          <div className="h-3 bg-[#0F172A] rounded-full overflow-hidden mb-4">
+          <div className="h-3 bg-[#07070F] rounded-full overflow-hidden mb-4">
             <div
               className="h-full rounded-full transition-all duration-700"
               style={{
@@ -328,7 +328,7 @@ export default function Nutrition() {
           ) : (
             <div className="space-y-2">
               {nutritionData?.meals?.map((meal) => (
-                <div key={meal.id} className="flex items-center gap-3 p-3 rounded-xl bg-[#0F172A]">
+                <div key={meal.id} className="flex items-center gap-3 p-3 rounded-xl bg-[#07070F]">
                   <div className="flex-1 min-w-0">
                     <div className="font-medium text-white text-sm truncate">{meal.meal_name}</div>
                     <div className="flex gap-3 mt-1">

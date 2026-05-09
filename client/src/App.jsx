@@ -10,13 +10,13 @@ import Profile from './pages/Profile';
 import CyclePage from './pages/CyclePage';
 
 function ProtectedRoute({ children }) {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, user } = useAuth();
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#0F172A]">
+      <div className="flex items-center justify-center min-h-screen bg-[#07070F]">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
+          <div className="w-10 h-10 border-2 border-white/10 border-t-white/60 rounded-full animate-spin" />
           <p className="text-slate-500 text-sm">Cargando...</p>
         </div>
       </div>
@@ -27,8 +27,13 @@ function ProtectedRoute({ children }) {
     return <Navigate to="/login" replace />;
   }
 
+  const accent = user?.color || '#00FF88';
+
   return (
-    <div className="max-w-md mx-auto relative min-h-screen">
+    <div
+      className="max-w-md mx-auto relative min-h-screen"
+      style={{ '--accent': accent, '--accent-dim': `${accent}30`, '--accent-faint': `${accent}12` }}
+    >
       {children}
       <BottomNav />
     </div>
@@ -40,8 +45,8 @@ function AppRoutes() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#0F172A]">
-        <div className="w-10 h-10 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
+      <div className="flex items-center justify-center min-h-screen bg-[#07070F]">
+        <div className="w-10 h-10 border-2 border-white/10 border-t-white/60 rounded-full animate-spin" />
       </div>
     );
   }
