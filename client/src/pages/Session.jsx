@@ -199,6 +199,7 @@ function ExerciseCard({ exercise, sessionId, userId, savedSets, onSetUpdate, acc
         <RestTimer
           defaultTime={exercise.rest || 60}
           onClose={() => setShowTimer(false)}
+          accentColor={accentColor}
         />
       )}
     </div>

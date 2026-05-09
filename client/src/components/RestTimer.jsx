@@ -34,7 +34,7 @@ function playCompletionSound() {
   setTimeout(() => playBeep(1100, 300, 0.5), 400);
 }
 
-export default function RestTimer({ defaultTime = 90, onClose }) {
+export default function RestTimer({ defaultTime = 90, onClose, accentColor = '#00FF88' }) {
   const [timeLeft, setTimeLeft] = useState(defaultTime);
   const [isRunning, setIsRunning] = useState(false);
   const [totalTime, setTotalTime] = useState(defaultTime);
@@ -106,7 +106,7 @@ export default function RestTimer({ defaultTime = 90, onClose }) {
 
   return createPortal(
     <div className="fixed bottom-0 left-0 right-0 z-50">
-      <div className="bg-[#1E293B] rounded-t-3xl w-full p-5 slide-up shadow-[0_-4px_24px_rgba(0,0,0,0.5)]">
+      <div className="bg-[#0D1422] rounded-t-3xl w-full p-5 slide-up shadow-[0_-4px_24px_rgba(0,0,0,0.5)]">
         {/* Drag handle */}
         <div className="flex justify-center mb-4">
           <div className="w-10 h-1 rounded-full bg-slate-600" />
@@ -114,7 +114,7 @@ export default function RestTimer({ defaultTime = 90, onClose }) {
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-bold text-white">Descanso</h3>
           {onClose && (
-            <button onClick={onClose} className="p-2 rounded-xl bg-[#0F172A] text-slate-400 active:scale-90">
+            <button onClick={onClose} className="p-2 rounded-xl bg-[#07070F] text-slate-400 active:scale-90">
               <X size={20} />
             </button>
           )}
@@ -133,12 +133,13 @@ export default function RestTimer({ defaultTime = 90, onClose }) {
               <circle
                 cx="50" cy="50" r="45"
                 fill="none"
-                stroke={finished ? '#10B981' : '#3B82F6'}
+                stroke={accentColor}
                 strokeWidth="8"
                 strokeLinecap="round"
                 strokeDasharray={circumference}
                 strokeDashoffset={strokeDashoffset}
                 className="transition-all duration-1000"
+                style={{ filter: `drop-shadow(0 0 6px ${accentColor})` }}
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
@@ -153,7 +154,7 @@ export default function RestTimer({ defaultTime = 90, onClose }) {
           </div>
 
           {finished && (
-            <p className="text-green-400 font-semibold mt-2 animate-pulse">¡Descanso completado!</p>
+            <p className="font-semibold mt-2 animate-pulse" style={{ color: accentColor }}>¡Descanso completado!</p>
           )}
         </div>
 
@@ -170,11 +171,12 @@ export default function RestTimer({ defaultTime = 90, onClose }) {
             <button
               key={s}
               onClick={() => setPreset(s)}
-              className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all active:scale-90 ${
+              className="flex-1 py-2 rounded-xl text-xs font-semibold transition-all active:scale-90"
+              style={
                 totalTime === s && !finished
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-[#0F172A] text-slate-400'
-              }`}
+                  ? { backgroundColor: accentColor, color: '#000' }
+                  : { backgroundColor: '#0A0F1A', color: '#64748B' }
+              }
             >
               {label}
             </button>
@@ -194,7 +196,8 @@ export default function RestTimer({ defaultTime = 90, onClose }) {
           {isRunning ? (
             <button
               onClick={pause}
-              className="flex-1 py-3 rounded-xl bg-blue-500 text-white font-semibold flex items-center justify-center gap-2 active:scale-95"
+              className="flex-1 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 active:scale-95"
+              style={{ backgroundColor: accentColor, color: '#000' }}
             >
               <Pause size={18} />
               Pausar
@@ -203,7 +206,8 @@ export default function RestTimer({ defaultTime = 90, onClose }) {
             <button
               onClick={start}
               disabled={finished && timeLeft === 0}
-              className="flex-1 py-3 rounded-xl bg-blue-500 text-white font-semibold flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
+              className="flex-1 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
+              style={{ backgroundColor: accentColor, color: '#000' }}
             >
               <Play size={18} />
               {finished ? 'Reiniciar' : 'Iniciar'}
