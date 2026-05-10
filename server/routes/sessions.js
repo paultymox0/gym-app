@@ -8,15 +8,16 @@ router.get('/today/:userId', (req, res) => {
   const { userId } = req.params;
   const today = new Date().toISOString().split('T')[0];
 
-  const dayType = getDayType(today);
+  // Check existing session first — handles day-type overrides set from Home
+  const session = db.prepare(
+    'SELECT * FROM sessions WHERE user_id = ? AND date = ?'
+  ).get(parseInt(userId), today);
+
+  const dayType = session?.day_type || getDayType(today);
 
   if (!dayType) {
     return res.json({ session: null, dayType: null, exercises: [], isRestDay: true });
   }
-
-  let session = db.prepare(
-    'SELECT * FROM sessions WHERE user_id = ? AND date = ?'
-  ).get(parseInt(userId), today);
 
   const exercises = getExercisesForUser(dayType, parseInt(userId));
 
@@ -175,6 +176,34 @@ router.get('/history/:userId', (req, res) => {
   ).all(parseInt(userId), parseInt(limit));
 
   res.json({ sessions });
+});
+
+// GET /api/sessions/calendar/:userId - Sessions for a specific month
+router.get('/calendar/:userId', (req, res) => {
+  const { userId } = req.params;
+  const y = parseInt(req.query.year) || new Date().getFullYear();
+  const m = parseInt(req.query.month) || (new Date().getMonth() + 1);
+  const startDate = `${y}-${String(m).padStart(2, '0')}-01`;
+  const lastDay = new Date(y, m, 0).getDate();
+  const endDate = `${y}-${String(m).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+  const sessions = db.prepare(
+    'SELECT id, date, day_type, completed, notes FROM sessions WHERE user_id = ? AND date >= ? AND date <= ? ORDER BY date'
+  ).all(parseInt(userId), startDate, endDate);
+  res.json({ sessions });
+});
+
+// GET /api/sessions/date/:userId/:date - Full session detail for a specific date
+router.get('/date/:userId/:date', (req, res) => {
+  const { userId, date } = req.params;
+  const session = db.prepare(
+    'SELECT * FROM sessions WHERE user_id = ? AND date = ?'
+  ).get(parseInt(userId), date);
+  if (!session) return res.json({ session: null });
+  const sets = db.prepare(
+    'SELECT * FROM set_logs WHERE session_id = ? ORDER BY exercise_name, set_number'
+  ).all(session.id);
+  const exercises = getExercisesForUser(session.day_type, parseInt(userId));
+  res.json({ session, sets, exercises });
 });
 
 module.exports = router;

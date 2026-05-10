@@ -7,6 +7,7 @@ import {
   Plus, ChevronRight, X, History, Search, Camera, Trash2, Image
 } from 'lucide-react';
 import SupplementsSection from '../components/SupplementsSection';
+import { MonthlyCalendarModal } from '../components/MonthlyCalendarModal';
 
 const DAYS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
@@ -376,18 +377,23 @@ function ProgressPhotosSection({ accentColor }) {
   );
 }
 
-function StatCard({ label, value, unit, icon: Icon, color }) {
+function StatCard({ label, value, unit, icon: Icon, color, onClick, trailing }) {
+  const El = onClick ? 'button' : 'div';
   return (
-    <div className="card">
+    <El
+      className={`card${onClick ? ' w-full text-left active:scale-[0.98] transition-all' : ''}`}
+      onClick={onClick}
+    >
       <div className="flex items-center gap-2 mb-2">
         <Icon size={16} style={{ color }} />
         <span className="text-xs text-slate-400">{label}</span>
+        {trailing}
       </div>
       <div className="text-2xl font-bold text-white">
         {value}
         {unit && <span className="text-sm text-slate-400 ml-1">{unit}</span>}
       </div>
-    </div>
+    </El>
   );
 }
 
@@ -397,6 +403,7 @@ export default function Profile() {
   const [volumeData, setVolumeData] = useState([]);
   const [stats, setStats] = useState(null);
   const [showAddWeight, setShowAddWeight] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const [exercises, setExercises] = useState([]);
@@ -521,34 +528,31 @@ export default function Profile() {
 
         {/* Stats */}
         {stats && (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-3">
             <StatCard
               label="Sesiones totales"
               value={stats.totalSessions}
               icon={Trophy}
               color={accentColor}
+              onClick={() => setShowCalendar(true)}
+              trailing={<ChevronRight size={14} className="text-slate-500 ml-auto" />}
             />
-            <StatCard
-              label="Racha actual"
-              value={stats.streak}
-              unit="días"
-              icon={TrendingUp}
-              color="#F59E0B"
-            />
-            <StatCard
-              label="Peso actual"
-              value={latestWeight || '--'}
-              unit={latestWeight ? 'kg' : ''}
-              icon={Scale}
-              color="#10B981"
-            />
-            <StatCard
-              label="Volumen total"
-              value={Math.round((stats.totalVolume || 0) / 1000)}
-              unit="t levantadas"
-              icon={TrendingUp}
-              color="#8B5CF6"
-            />
+            <div className="grid grid-cols-2 gap-3">
+              <StatCard
+                label="Racha actual"
+                value={stats.streak}
+                unit="días"
+                icon={TrendingUp}
+                color="#F59E0B"
+              />
+              <StatCard
+                label="Peso actual"
+                value={latestWeight || '--'}
+                unit={latestWeight ? 'kg' : ''}
+                icon={Scale}
+                color="#10B981"
+              />
+            </div>
           </div>
         )}
 
@@ -736,6 +740,15 @@ export default function Profile() {
           loading={historyLoading}
           onClose={() => setSelectedExercise(null)}
           accentColor={accentColor}
+        />
+      )}
+
+      {showCalendar && (
+        <MonthlyCalendarModal
+          onClose={() => setShowCalendar(false)}
+          accentColor={accentColor}
+          userId={user?.id}
+          apiCall={apiCall}
         />
       )}
     </div>
