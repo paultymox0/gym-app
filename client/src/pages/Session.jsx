@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import RestTimer from '../components/RestTimer';
 import {
   Check, ChevronDown, ChevronUp, Timer, Moon, Dumbbell,
-  Save, Info, Play, RefreshCw, Clock, FileText, Flame
+  Save, Info, Play, RefreshCw, Clock, FileText, Flame, X
 } from 'lucide-react';
 
 const DAY_NAMES = {
@@ -125,10 +126,9 @@ function PRCelebration({ exerciseName, weight, accentColor, onDismiss }) {
 
   const colors = ['#F59E0B', '#10B981', '#3B82F6', '#EC4899', '#8B5CF6'];
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none px-6">
+  return createPortal(
+    <div className="fixed inset-0 z-[60] flex items-center justify-center pointer-events-none px-6">
       <div className="relative">
-        {/* Confetti */}
         {colors.map((c, i) => (
           <div
             key={i}
@@ -152,7 +152,8 @@ function PRCelebration({ exerciseName, weight, accentColor, onDismiss }) {
           <div className="text-xs text-slate-500 mt-2">Personal Best ✨</div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
@@ -164,9 +165,21 @@ function SessionSummary({ summaryData, elapsedSeconds, dayName, accentColor, onC
     ? Math.round(((currVolume - prevVolume) / prevVolume) * 100)
     : null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm">
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
+
+  return createPortal(
+    <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/70 backdrop-blur-sm"
+         onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="bg-[#0D1422] rounded-t-3xl w-full max-w-md p-6 slide-up">
+        <div className="flex items-center justify-between mb-4">
+          <div />
+          <button onClick={onClose} className="p-2 rounded-xl bg-[#07070F] text-slate-400 active:scale-90">
+            <X size={18} />
+          </button>
+        </div>
         <div className="text-center mb-6">
           <div className="text-5xl mb-3">🎉</div>
           <h2 className="text-2xl font-bold text-white">¡Sesión completada!</h2>
@@ -214,7 +227,8 @@ function SessionSummary({ summaryData, elapsedSeconds, dayName, accentColor, onC
           ¡Genial! 💪
         </button>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 

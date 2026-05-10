@@ -133,6 +133,11 @@ function CompetitionCard({ competition, currentUserId, accentColor }) {
 }
 
 function DayTypeSelectorSheet({ onClose, onSelect, accentColor }) {
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
+
   const options = [
     { value: 'upper_a', label: 'Upper A', color: '#3B82F6' },
     { value: 'lower_a', label: 'Lower A', color: '#10B981' },
@@ -145,7 +150,7 @@ function DayTypeSelectorSheet({ onClose, onSelect, accentColor }) {
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-[60] flex items-end justify-center bg-black/60 backdrop-blur-sm"
       onClick={e => e.target === e.currentTarget && onClose()}
     >
       <div className="bg-[#0D1422] rounded-t-3xl w-full max-w-md p-4 slide-up"

@@ -155,6 +155,11 @@ export function MonthlyCalendarModal({ onClose, accentColor, userId, apiCall }) 
   const today = now.toISOString().split('T')[0];
 
   useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
+
+  useEffect(() => {
     async function fetchMonth() {
       setLoading(true);
       try {
@@ -191,7 +196,7 @@ export function MonthlyCalendarModal({ onClose, accentColor, userId, apiCall }) 
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex flex-col bg-[#07070F]"
+      className="fixed inset-0 z-[60] flex flex-col bg-[#07070F]"
       style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       {/* Top bar */}

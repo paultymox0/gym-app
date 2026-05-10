@@ -27,6 +27,11 @@ function AddWeightModal({ onClose, onAdd, accentColor }) {
   const [weight, setWeight] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
 
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!weight) return;
@@ -34,8 +39,8 @@ function AddWeightModal({ onClose, onAdd, accentColor }) {
     onClose();
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm"
+  return createPortal(
+    <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/60 backdrop-blur-sm"
          onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="bg-[#0D1422] rounded-t-3xl w-full max-w-md p-6 slide-up">
         <div className="flex items-center justify-between mb-5">
@@ -80,17 +85,22 @@ function AddWeightModal({ onClose, onAdd, accentColor }) {
           </button>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
 function ExerciseHistorySheet({ exercise, history, loading, onClose, accentColor }) {
-  // Compute global max weight for this exercise to show trophy
   const allWeights = history.flatMap(s => s.sets.filter(s => s.completed && s.weight > 0).map(s => s.weight));
   const maxWeight = allWeights.length > 0 ? Math.max(...allWeights) : 0;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm"
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
+
+  return createPortal(
+    <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/60 backdrop-blur-sm"
          onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="bg-[#0D1422] rounded-t-3xl w-full max-w-md flex flex-col slide-up" style={{ maxHeight: '85vh' }}>
         <div className="flex items-center justify-between p-5 border-b border-white/5 shrink-0">
@@ -166,13 +176,20 @@ function ExerciseHistorySheet({ exercise, history, loading, onClose, accentColor
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
 // ─── Progress Photos ──────────────────────────────────────────────────────────
 function PhotoCard({ photo, onDelete }) {
   const [showFull, setShowFull] = useState(false);
+
+  useEffect(() => {
+    if (!showFull) return;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, [showFull]);
 
   return (
     <div className="relative aspect-square rounded-2xl overflow-hidden bg-[#0E1520] border border-white/8">
@@ -200,7 +217,7 @@ function PhotoCard({ photo, onDelete }) {
 
       {showFull && photo.thumb && createPortal(
         <div
-          className="fixed inset-0 z-50 bg-black/92 flex items-center justify-center p-4"
+          className="fixed inset-0 z-[60] bg-black/92 flex items-center justify-center p-4"
           style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}
           onClick={() => setShowFull(false)}
         >

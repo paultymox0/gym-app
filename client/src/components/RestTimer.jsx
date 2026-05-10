@@ -105,8 +105,9 @@ export default function RestTimer({ defaultTime = 90, onClose, accentColor = '#0
   const seconds = timeLeft % 60;
 
   return createPortal(
-    <div className="fixed bottom-0 left-0 right-0 z-50">
-      <div className="bg-[#0D1422] rounded-t-3xl w-full p-5 slide-up shadow-[0_-4px_24px_rgba(0,0,0,0.5)]">
+    <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/50 backdrop-blur-sm"
+         onClick={e => e.target === e.currentTarget && onClose?.()}>
+      <div className="bg-[#0D1422] rounded-t-3xl w-full max-w-md p-5 slide-up shadow-[0_-4px_24px_rgba(0,0,0,0.5)]">
         {/* Drag handle */}
         <div className="flex justify-center mb-4">
           <div className="w-10 h-1 rounded-full bg-slate-600" />
@@ -219,4 +220,5 @@ export default function RestTimer({ defaultTime = 90, onClose, accentColor = '#0
     document.body
   );
 }
+
 
