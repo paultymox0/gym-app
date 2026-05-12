@@ -1,11 +1,25 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { AnimatePresence, motion } from 'framer-motion';
 import BottomNav from './components/BottomNav';
 import Login from './pages/Login';
 import Home from './pages/Home';
 import Session from './pages/Session';
 import Profile from './pages/Profile';
+
+function AnimatedPage({ children }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -8 }}
+      transition={{ duration: 0.2 }}
+    >
+      {children}
+    </motion.div>
+  );
+}
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated, loading, user } = useAuth();
@@ -40,6 +54,7 @@ function ProtectedRoute({ children }) {
 
 function AppRoutes() {
   const { isAuthenticated, loading } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -50,37 +65,43 @@ function AppRoutes() {
   }
 
   return (
-    <Routes>
-      <Route
-        path="/login"
-        element={isAuthenticated ? <Navigate to="/" replace /> : <Login />}
-      />
-      <Route
-        path="/"
-        element={
-          <ProtectedRoute>
-            <Home />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/session"
-        element={
-          <ProtectedRoute>
-            <Session />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/profile"
-        element={
-          <ProtectedRoute>
-            <Profile />
-          </ProtectedRoute>
-        }
-      />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route
+          path="/login"
+          element={
+            isAuthenticated ? <Navigate to="/" replace /> : (
+              <AnimatedPage><Login /></AnimatedPage>
+            )
+          }
+        />
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <AnimatedPage><Home /></AnimatedPage>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/session"
+          element={
+            <ProtectedRoute>
+              <AnimatedPage><Session /></AnimatedPage>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <AnimatedPage><Profile /></AnimatedPage>
+            </ProtectedRoute>
+          }
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </AnimatePresence>
   );
 }
 
