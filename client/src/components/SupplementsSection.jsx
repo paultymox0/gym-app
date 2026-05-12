@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Pill, Plus, Trash2, Check } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const TIME_OPTIONS = [
   { value: 'morning',      label: '☀️ Mañana' },
@@ -58,7 +59,6 @@ export default function SupplementsSection({ accentColor }) {
         })
       });
     } catch (err) {
-      // revert on error
       setSupplements(prev =>
         prev.map(s => s.name === suppName ? { ...s, taken: currentTaken } : s)
       );
@@ -96,17 +96,8 @@ export default function SupplementsSection({ accentColor }) {
     }
   }
 
-  const openForm = () => {
-    setNewName('');
-    setNewTime('morning');
-    setShowForm(true);
-  };
-
-  const cancelForm = () => {
-    setShowForm(false);
-    setNewName('');
-    setNewTime('morning');
-  };
+  const openForm = () => { setNewName(''); setNewTime('morning'); setShowForm(true); };
+  const cancelForm = () => { setShowForm(false); setNewName(''); setNewTime('morning'); };
 
   const taken = supplements.filter(s => s.taken).length;
   const canAdd = supplements.length < MAX;
@@ -171,42 +162,63 @@ export default function SupplementsSection({ accentColor }) {
       {/* Supplement list */}
       {!loading && supplements.length > 0 && (
         <div className="space-y-2 mb-2">
-          {supplements.map(supp => (
-            <div
-              key={supp.id}
-              className="flex items-center gap-3 p-3 rounded-xl"
-              style={{ backgroundColor: '#07070F' }}
-            >
-              {/* Checkbox */}
-              <button
-                onClick={() => toggleSupplement(supp.name, supp.taken)}
-                className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 active:scale-90 transition-all border-2"
-                style={{
-                  backgroundColor: supp.taken ? accentColor : 'transparent',
-                  borderColor: supp.taken ? accentColor : '#334155'
-                }}
+          <AnimatePresence initial={false}>
+            {supplements.map(supp => (
+              <motion.div
+                key={supp.id}
+                layout
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.2 }}
+                className="flex items-center gap-3 p-3 rounded-xl"
+                style={{ backgroundColor: '#07070F' }}
               >
-                {supp.taken && <Check size={15} className="text-white" strokeWidth={3} />}
-              </button>
+                {/* Checkbox con animación pop */}
+                <motion.button
+                  onClick={() => toggleSupplement(supp.name, supp.taken)}
+                  whileTap={{ scale: 0.75 }}
+                  animate={supp.taken ? { scale: [1, 1.25, 1] } : { scale: 1 }}
+                  transition={{ duration: 0.25 }}
+                  className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border-2"
+                  style={{
+                    backgroundColor: supp.taken ? accentColor : 'transparent',
+                    borderColor: supp.taken ? accentColor : '#334155'
+                  }}
+                >
+                  <AnimatePresence>
+                    {supp.taken && (
+                      <motion.div
+                        initial={{ scale: 0, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0, opacity: 0 }}
+                        transition={{ duration: 0.15 }}
+                      >
+                        <Check size={15} className="text-white" strokeWidth={3} />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.button>
 
-              {/* Info */}
-              <div className="flex-1 min-w-0">
-                <p className={`text-sm font-semibold truncate ${supp.taken ? 'text-slate-500 line-through' : 'text-white'}`}>
-                  {supp.name}
-                </p>
-                <p className="text-xs text-slate-500 mt-0.5">{getTimeLabel(supp.time)}</p>
-              </div>
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                  <p className={`text-sm font-semibold truncate ${supp.taken ? 'text-slate-500 line-through' : 'text-white'}`}>
+                    {supp.name}
+                  </p>
+                  <p className="text-xs text-slate-500 mt-0.5">{getTimeLabel(supp.time)}</p>
+                </div>
 
-              {/* Delete */}
-              <button
-                onClick={() => deleteSupplement(supp.id)}
-                className="w-8 h-8 rounded-xl flex items-center justify-center active:scale-90 transition-all"
-                style={{ backgroundColor: '#1E293B' }}
-              >
-                <Trash2 size={14} className="text-red-400" />
-              </button>
-            </div>
-          ))}
+                {/* Delete */}
+                <button
+                  onClick={() => deleteSupplement(supp.id)}
+                  className="w-8 h-8 rounded-xl flex items-center justify-center active:scale-90 transition-all"
+                  style={{ backgroundColor: '#1E293B' }}
+                >
+                  <Trash2 size={14} className="text-red-400" />
+                </button>
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </div>
       )}
 
@@ -218,7 +230,6 @@ export default function SupplementsSection({ accentColor }) {
           style={{ backgroundColor: '#07070F', border: `1px solid ${accentColor}30` }}
         >
           <p className="text-sm font-semibold text-white">Nuevo suplemento</p>
-
           <input
             type="text"
             value={newName}
@@ -228,7 +239,6 @@ export default function SupplementsSection({ accentColor }) {
             maxLength={40}
             autoFocus
           />
-
           <select
             value={newTime}
             onChange={e => setNewTime(e.target.value)}
@@ -238,7 +248,6 @@ export default function SupplementsSection({ accentColor }) {
               <option key={opt.value} value={opt.value}>{opt.label}</option>
             ))}
           </select>
-
           <div className="flex gap-2 pt-1">
             <button
               type="button"
@@ -260,10 +269,10 @@ export default function SupplementsSection({ accentColor }) {
         </form>
       )}
 
-      {/* Limit notice */}
       {!canAdd && !showForm && (
         <p className="text-center text-xs text-slate-600 pt-1">Máximo 5 suplementos</p>
       )}
     </div>
   );
 }
+
