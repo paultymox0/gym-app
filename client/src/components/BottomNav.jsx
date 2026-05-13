@@ -22,9 +22,12 @@ export default function BottomNav() {
     <nav
       className="fixed bottom-0 left-0 right-0 z-50"
       style={{
-        background: '#0A0A14',
-        borderTop: `1px solid ${accentColor}18`,
-        boxShadow: `0 -4px 32px ${accentColor}10`,
+        background: 'rgba(29, 26, 36, 0.92)',
+        backdropFilter: 'blur(24px)',
+        WebkitBackdropFilter: 'blur(24px)',
+        borderTop: `1px solid #4a4455`,
+        boxShadow: `0 -4px 32px rgba(0,0,0,0.4)`,
+        borderRadius: '12px 12px 0 0',
         paddingBottom: 'env(safe-area-inset-bottom)',
       }}
     >

@@ -2,14 +2,34 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import {
-  Dumbbell, CheckSquare, Briefcase, Zap, FileText,
-  ChevronRight, Moon, Flame, Trophy, User
+  Bell, Sparkles, CheckSquare, FilePlus,
+  Dumbbell, Moon, Flame, Trophy,
 } from 'lucide-react';
 import SupplementsSection from '../components/SupplementsSection';
 
-const DAY_NAMES = {
+const DAY_ES = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+const MONTH_ES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+
+const SESSION_NAMES = {
   upper_a: 'Upper A', lower_a: 'Lower A', abs_a: 'Abs A',
   upper_b: 'Upper B', lower_b: 'Lower B', abs_b: 'Abs B',
+};
+
+const QUOTES = [
+  '"La disciplina es el puente entre las metas y los logros."',
+  '"El éxito es la suma de pequeños esfuerzos repetidos día tras día."',
+  '"No se trata de tener tiempo, se trata de hacer tiempo."',
+  '"Cada día es una nueva oportunidad para mejorar."',
+  '"Lo que no te reta, no te cambia."',
+  '"Empieza donde estás. Usa lo que tienes. Haz lo que puedes."',
+  '"Un pequeño progreso cada día suma grandes resultados."',
+];
+
+const glass = {
+  background: 'rgba(34, 30, 40, 0.75)',
+  backdropFilter: 'blur(12px)',
+  WebkitBackdropFilter: 'blur(12px)',
+  border: '1px solid rgba(255, 255, 255, 0.06)',
 };
 
 function CompetitionCard({ competition }) {
@@ -19,25 +39,29 @@ function CompetitionCard({ competition }) {
   function Row({ label, tV, aV, fmt }) {
     const f = fmt || (v => v);
     return (
-      <div className="flex items-center gap-2 py-1.5 border-b border-white/5 last:border-0">
-        <div className={`flex-1 text-right text-xs font-bold ${tV > aV ? 'text-[#00FF88]' : 'text-slate-400'}`}>{tV > aV && '👑 '}{f(tV)}</div>
-        <div className="text-[10px] text-slate-500 w-20 text-center shrink-0">{label}</div>
-        <div className={`flex-1 text-left text-xs font-bold ${aV > tV ? 'text-[#BF5FFF]' : 'text-slate-400'}`}>{f(aV)}{aV > tV && ' 👑'}</div>
+      <div className="flex items-center gap-2 py-1.5 border-b last:border-0" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
+        <div className={`flex-1 text-right text-xs font-bold ${tV > aV ? 'text-[#00FF88]' : 'text-[#958da1]'}`}>
+          {tV > aV && '👑 '}{f(tV)}
+        </div>
+        <div className="text-[10px] text-[#958da1] w-20 text-center shrink-0">{label}</div>
+        <div className={`flex-1 text-left text-xs font-bold ${aV > tV ? 'text-[#BF5FFF]' : 'text-[#958da1]'}`}>
+          {f(aV)}{aV > tV && ' 👑'}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="card">
-      <div className="flex items-center gap-2 mb-2">
+    <div style={glass} className="rounded-xl p-4">
+      <div className="flex items-center gap-2 mb-3">
         <Trophy size={15} className="text-amber-400" />
-        <h3 className="text-sm font-semibold text-white">Timmy vs Andrea</h3>
-        <span className="text-[10px] text-slate-500 ml-auto">Este mes</span>
+        <h3 className="text-sm font-semibold text-[#e8dfee]">Timmy vs Andrea</h3>
+        <span className="text-[10px] text-[#958da1] ml-auto">Este mes</span>
       </div>
       <div className="flex mb-1">
-        <div className="flex-1 text-center text-xs font-bold" style={{ color: '#00FF88' }}>Timmy</div>
+        <div className="flex-1 text-center text-xs font-bold text-[#00FF88]">Timmy</div>
         <div className="w-20" />
-        <div className="flex-1 text-center text-xs font-bold" style={{ color: '#BF5FFF' }}>Andrea</div>
+        <div className="flex-1 text-center text-xs font-bold text-[#BF5FFF]">Andrea</div>
       </div>
       <Row label="Sesiones 💪" tV={timmy.monthSessions} aV={andrea.monthSessions} />
       <Row label="Racha 🔥" tV={timmy.streak} aV={andrea.streak} fmt={v => `${v}d`} />
@@ -48,13 +72,16 @@ function CompetitionCard({ competition }) {
 export default function Hub() {
   const { user, apiCall } = useAuth();
   const navigate = useNavigate();
-  const [data, setData] = useState({ gym: null, stats: null, habits: [], tasks: [], projects: [], notes: [], competition: null });
+  const [data, setData] = useState({
+    gym: null, stats: null, habits: [], tasks: [],
+    projects: [], notes: [], competition: null,
+  });
   const [loading, setLoading] = useState(true);
 
-  const today = new Date().toISOString().split('T')[0];
-  const accentColor = user?.color || '#3B82F6';
-  const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-  const todayDisplay = today.split('-').reverse().join('/');
+  const now = new Date();
+  const accentColor = user?.color || '#d2bbff';
+  const todayLabel = `${DAY_ES[now.getDay()]}, ${now.getDate()} de ${MONTH_ES[now.getMonth()]}`;
+  const quote = QUOTES[now.getDate() % QUOTES.length];
 
   useEffect(() => { if (user) fetchAll(); }, [user]);
 
@@ -85,13 +112,16 @@ export default function Hub() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#07070F]">
-        <div className="w-8 h-8 border-2 border-white/10 border-t-white/50 rounded-full animate-spin" />
+      <div className="flex items-center justify-center min-h-screen" style={{ background: '#15121b' }}>
+        <div
+          className="w-8 h-8 rounded-full border-2 animate-spin"
+          style={{ borderColor: `${accentColor}30`, borderTopColor: accentColor }}
+        />
       </div>
     );
   }
 
-  const { gym, stats, habits, tasks, projects, notes, competition } = data;
+  const { gym, stats, habits, tasks, competition } = data;
   const gymStreak = stats?.streak || 0;
   const isRestDay = gym?.isRestDay;
   const gymDayType = gym?.dayType;
@@ -99,129 +129,216 @@ export default function Hub() {
   const habitsCompleted = habits.filter(h => h.today_completed).length;
   const pendingTasks = tasks.filter(t => !t.completed);
   const highPriority = pendingTasks.filter(t => t.priority === 'high');
-  const activeProjects = projects.filter(p => p.status === 'active');
-  const recentNote = notes[0];
+  const urgentTask = highPriority[0] || pendingTasks[0];
+
+  const summaryText = (() => {
+    const parts = [];
+    if (pendingTasks.length > 0)
+      parts.push(`${pendingTasks.length} tarea${pendingTasks.length > 1 ? 's pendientes' : ' pendiente'}`);
+    const left = habits.length - habitsCompleted;
+    if (left > 0) parts.push(`${left} hábito${left > 1 ? 's' : ''} para hoy`);
+    if (parts.length === 0) return '¡Todo al día! Sigue así 🎉';
+    return `Tienes ${parts.join(' y ')}. ¡A por ello!`;
+  })();
+
+  const progressFilled = habits.length > 0
+    ? Math.round((habitsCompleted / habits.length) * 3)
+    : 0;
 
   return (
-    <div className="min-h-screen bg-[#07070F] pb-24 fade-in">
-      {/* Header */}
-      <div className="px-4 pb-3" style={{ paddingTop: `calc(env(safe-area-inset-top) + 1.5rem)` }}>
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-slate-400 text-xs">{dayNames[new Date().getDay()]}, {todayDisplay}</p>
-            <h1 className="text-2xl font-bold text-white">Mi Hub</h1>
-          </div>
-          <button
-            onClick={() => navigate('/profile')}
-            className="w-10 h-10 rounded-full flex items-center justify-center border-2 active:scale-90 transition-all"
-            style={{ borderColor: `${accentColor}50`, backgroundColor: `${accentColor}15` }}
-          >
-            <User size={18} style={{ color: accentColor }} />
-          </button>
-        </div>
-        <p className="text-slate-500 text-sm mt-0.5">
-          Hola, <span style={{ color: accentColor }}>{user?.name}</span> 👋
-        </p>
-      </div>
+    <div className="min-h-screen pb-32" style={{ background: '#15121b', color: '#e8dfee' }}>
 
-      <div className="px-4 space-y-3">
-        {/* Gym card */}
+      {/* Header */}
+      <header
+        className="flex justify-between items-center px-4 w-full sticky top-0 z-40 border-b"
+        style={{
+          background: 'rgba(21, 18, 27, 0.85)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+          borderColor: '#4a4455',
+          paddingTop: 'max(env(safe-area-inset-top), 0px)',
+          height: 'calc(64px + env(safe-area-inset-top, 0px))',
+        }}
+      >
+        <div className="flex items-center gap-3">
+          <div
+            className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border shrink-0"
+            style={{ borderColor: accentColor, background: `${accentColor}20`, color: accentColor }}
+          >
+            {user?.name?.[0]?.toUpperCase()}
+          </div>
+          <h1 className="text-xl font-bold tracking-tight" style={{ color: accentColor }}>Mi Hub</h1>
+        </div>
         <button
-          onClick={() => navigate('/session')}
-          className="card w-full text-left active:scale-[0.98] transition-all"
+          className="w-10 h-10 flex items-center justify-center rounded-full active:scale-95 transition-transform"
+          style={{ color: accentColor }}
         >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ backgroundColor: isRestDay ? '#1E293B' : `${accentColor}20` }}>
-                {isRestDay ? <Moon size={22} className="text-slate-400" /> : <Dumbbell size={22} style={{ color: accentColor }} />}
+          <Bell size={20} />
+        </button>
+      </header>
+
+      <main className="px-4 pt-6 max-w-2xl mx-auto space-y-6">
+
+        {/* Greeting */}
+        <section>
+          <h2 className="text-xl font-semibold text-[#e8dfee]">¡Hola, {user?.name}!</h2>
+          <p className="text-sm text-[#ccc3d8] mt-0.5">{todayLabel}</p>
+        </section>
+
+        {/* AI Summary Card */}
+        <section style={glass} className="rounded-xl p-4 relative overflow-hidden">
+          <div className="absolute top-1 right-1 pointer-events-none select-none">
+            <Sparkles size={52} style={{ color: accentColor, opacity: 0.15 }} />
+          </div>
+          <div className="relative flex flex-col gap-2">
+            <span
+              className="text-[10px] font-semibold uppercase tracking-widest"
+              style={{ color: accentColor }}
+            >
+              Resumen AI
+            </span>
+            <p className="text-lg font-semibold leading-tight text-[#e8dfee] pr-10">
+              {summaryText}
+            </p>
+          </div>
+          <div className="mt-4 flex gap-1">
+            {[0, 1, 2].map(i => (
+              <div
+                key={i}
+                className="h-1 flex-1 rounded-full"
+                style={{ background: i < progressFilled ? accentColor : '#4a4455' }}
+              />
+            ))}
+          </div>
+        </section>
+
+        {/* Quick Actions */}
+        <section className="flex gap-3">
+          <button
+            onClick={() => navigate('/tasks')}
+            style={glass}
+            className="flex-1 p-4 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-transform"
+          >
+            <CheckSquare size={18} style={{ color: accentColor }} />
+            <span className="text-xs font-semibold text-[#e8dfee]">Nueva Tarea</span>
+          </button>
+          <button
+            onClick={() => navigate('/notes')}
+            style={glass}
+            className="flex-1 p-4 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-transform"
+          >
+            <FilePlus size={18} className="text-[#89ceff]" />
+            <span className="text-xs font-semibold text-[#e8dfee]">Nueva Nota</span>
+          </button>
+        </section>
+
+        {/* Resumen del Día */}
+        <section className="space-y-3">
+          <h3 className="text-[10px] font-semibold uppercase tracking-widest px-1 text-[#ccc3d8]">
+            Resumen del Día
+          </h3>
+          <div className="grid grid-cols-2 gap-3">
+
+            {/* Urgent / pending task */}
+            {urgentTask ? (
+              <button
+                onClick={() => navigate('/tasks')}
+                style={{ ...glass, borderLeft: '4px solid #ffb4ab' }}
+                className="col-span-2 rounded-xl p-4 text-left active:scale-[0.98] transition-transform"
+              >
+                <div className="flex justify-between items-start mb-2">
+                  <span
+                    className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                    style={{ color: '#ffb4ab', background: 'rgba(255,180,171,0.1)' }}
+                  >
+                    {highPriority.length > 0 ? 'Urgente' : 'Pendiente'}
+                  </span>
+                  <span className="text-[10px] text-[#958da1]">{pendingTasks.length} tareas</span>
+                </div>
+                <p className="text-base font-semibold text-[#e8dfee] truncate">{urgentTask.title}</p>
+                {urgentTask.description && (
+                  <p className="text-sm text-[#ccc3d8] mt-0.5 truncate">{urgentTask.description}</p>
+                )}
+              </button>
+            ) : (
+              <div
+                style={{ ...glass, borderLeft: '4px solid #4a4455' }}
+                className="col-span-2 rounded-xl p-4"
+              >
+                <p className="text-sm font-semibold text-[#e8dfee]">Sin tareas pendientes</p>
+                <p className="text-xs text-[#958da1] mt-0.5">¡Todo al día! 🎉</p>
+              </div>
+            )}
+
+            {/* Gym card */}
+            <button
+              onClick={() => navigate('/session')}
+              style={glass}
+              className="rounded-xl p-4 flex flex-col justify-between active:scale-95 transition-transform text-left"
+            >
+              <div className="mb-2">
+                {isRestDay
+                  ? <Moon size={28} className="text-[#958da1]" />
+                  : <Dumbbell size={28} style={{ color: '#ffb784' }} />
+                }
               </div>
               <div>
-                <p className="text-[10px] text-slate-500 uppercase tracking-wide">Gym hoy</p>
-                <p className="font-semibold text-white text-sm">
-                  {isRestDay ? 'Día de descanso' : gymCompleted ? 'Completado ✓' : DAY_NAMES[gymDayType] || 'Empezar sesión'}
+                <p className="text-xs font-semibold text-[#e8dfee]">
+                  {isRestDay ? 'Descanso' : SESSION_NAMES[gymDayType] || 'Gym'}
+                </p>
+                <p className="text-xs mt-0.5" style={{ color: gymCompleted ? '#ffb784' : '#958da1' }}>
+                  {gymCompleted ? 'Completado' : isRestDay ? 'Día libre' : 'Pendiente'}
                 </p>
               </div>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className="text-right mr-1">
-                <div className="flex items-center gap-1">
-                  <Flame size={13} style={{ color: accentColor }} />
-                  <span className="font-bold text-white text-sm">{gymStreak}</span>
-                </div>
-                <p className="text-[10px] text-slate-500">días</p>
+            </button>
+
+            {/* Streak card */}
+            <div style={glass} className="rounded-xl p-4 flex flex-col justify-between">
+              <Flame size={28} style={{ color: accentColor }} />
+              <div className="mt-4">
+                <p className="text-2xl font-bold text-[#e8dfee]">
+                  {gymStreak}
+                  <span className="text-sm font-normal text-[#958da1]">d</span>
+                </p>
+                <p className="text-xs text-[#958da1]">Racha actual</p>
               </div>
-              <ChevronRight size={16} className="text-slate-600" />
             </div>
+
           </div>
-        </button>
+        </section>
 
-        {/* 2x2 section grid */}
-        <div className="grid grid-cols-2 gap-3">
-          <button onClick={() => navigate('/habits')} className="card text-left active:scale-[0.98] transition-all">
-            <Zap size={18} className="mb-2" style={{ color: accentColor }} />
-            <p className="text-2xl font-bold text-white">{habitsCompleted}<span className="text-base text-slate-500">/{habits.length}</span></p>
-            <p className="text-xs text-slate-400 mt-0.5">Hábitos hoy</p>
-          </button>
-
-          <button onClick={() => navigate('/tasks')} className="card text-left active:scale-[0.98] transition-all">
-            <CheckSquare size={18} className="mb-2 text-sky-400" />
-            <p className="text-2xl font-bold text-white">{pendingTasks.length}</p>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Tareas
-              {highPriority.length > 0 && <span className="text-red-400"> · {highPriority.length} urgente</span>}
+        {/* Frase del Día */}
+        <section
+          className="relative rounded-xl overflow-hidden flex items-center px-6 py-10"
+          style={{
+            minHeight: '160px',
+            background: 'linear-gradient(135deg, rgba(63,0,142,0.85) 0%, rgba(124,58,237,0.55) 55%, rgba(21,18,27,0.98) 100%)',
+          }}
+        >
+          <div
+            className="absolute inset-0"
+            style={{ background: 'linear-gradient(to top, #15121b 0%, rgba(21,18,27,0.3) 60%, transparent 100%)' }}
+          />
+          <div className="relative z-10 text-center w-full">
+            <span
+              className="text-[10px] font-semibold uppercase tracking-widest block mb-2"
+              style={{ color: accentColor }}
+            >
+              Frase del Día
+            </span>
+            <p className="text-base font-semibold italic leading-relaxed text-[#ede0ff]">
+              {quote}
             </p>
-          </button>
-
-          <button onClick={() => navigate('/projects')} className="card text-left active:scale-[0.98] transition-all">
-            <Briefcase size={18} className="mb-2 text-violet-400" />
-            <p className="text-2xl font-bold text-white">{activeProjects.length}</p>
-            <p className="text-xs text-slate-400 mt-0.5">Proyectos activos</p>
-          </button>
-
-          <button onClick={() => navigate('/notes')} className="card text-left active:scale-[0.98] transition-all">
-            <FileText size={18} className="mb-2 text-amber-400" />
-            <p className="text-2xl font-bold text-white">{notes.length}</p>
-            <p className="text-xs text-slate-400 mt-0.5">Notas</p>
-          </button>
-        </div>
-
-        {/* High priority tasks */}
-        {highPriority.length > 0 && (
-          <button onClick={() => navigate('/tasks')} className="card w-full text-left active:scale-[0.98] transition-all">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-              <span className="text-sm font-semibold text-white">Urgente</span>
-              <ChevronRight size={14} className="text-slate-500 ml-auto" />
-            </div>
-            <div className="space-y-2">
-              {highPriority.slice(0, 3).map(t => (
-                <div key={t.id} className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded border border-slate-600 shrink-0" />
-                  <span className="text-sm text-slate-300 truncate">{t.title}</span>
-                </div>
-              ))}
-            </div>
-          </button>
-        )}
-
-        {/* Recent note */}
-        {recentNote && (
-          <button onClick={() => navigate('/notes')} className="card w-full text-left active:scale-[0.98] transition-all">
-            <div className="flex items-center gap-2 mb-1">
-              <FileText size={13} className="text-amber-400" />
-              <span className="text-[10px] text-slate-500 uppercase tracking-wide">Nota reciente</span>
-            </div>
-            <p className="font-semibold text-white text-sm">{recentNote.title}</p>
-            {recentNote.content && <p className="text-slate-400 text-xs mt-0.5 line-clamp-2">{recentNote.content}</p>}
-          </button>
-        )}
+          </div>
+        </section>
 
         {/* Supplements */}
         <SupplementsSection accentColor={accentColor} />
 
         {/* Competition */}
         <CompetitionCard competition={competition} />
-      </div>
+
+      </main>
     </div>
   );
 }
