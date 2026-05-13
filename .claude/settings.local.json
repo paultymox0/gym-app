@@ -5,7 +5,8 @@
       "Bash(npm run *)",
       "Bash(timeout 8 node index.js)",
       "Bash(node *)",
-      "Bash(npx vite *)"
+      "Bash(npx vite *)",
+      "Bash(curl -s http://localhost:5173)"
     ]
   }
 }

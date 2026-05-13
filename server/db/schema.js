@@ -152,6 +152,20 @@ function initializeSchema() {
       updated_at TEXT DEFAULT (datetime('now')),
       FOREIGN KEY(user_id) REFERENCES users(id)
     );
+
+    CREATE TABLE IF NOT EXISTS workout_exercises (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      day_key TEXT NOT NULL,
+      name TEXT NOT NULL,
+      sets INTEGER NOT NULL DEFAULT 3,
+      reps TEXT NOT NULL DEFAULT '10',
+      rest_seconds INTEGER DEFAULT 90,
+      notes TEXT DEFAULT '',
+      is_time INTEGER DEFAULT 0,
+      sort_order INTEGER DEFAULT 0,
+      FOREIGN KEY(user_id) REFERENCES users(id)
+    );
   `);
 
   // Seed users
@@ -179,6 +193,65 @@ function initializeSchema() {
     const has = db.prepare('SELECT COUNT(*) as count FROM habits WHERE user_id = ? AND type = ?').get(u.id, 'gym');
     if (has.count === 0) {
       db.prepare('INSERT INTO habits (user_id, name, emoji, type, color, sort_order) VALUES (?, ?, ?, ?, ?, ?)').run(u.id, 'Gym', '🏋️', 'gym', u.color, 0);
+    }
+  }
+
+  // Seed 5-day workout plan for each user (idempotent)
+  const DEFAULT_EXERCISES = [
+    // Día 1: Espalda y Bíceps
+    { day_key: 'back_biceps', name: 'Peso muerto', sets: 4, reps: '4-6', rest_seconds: 180, notes: '', is_time: 0, sort_order: 1 },
+    { day_key: 'back_biceps', name: 'Remo con barra', sets: 4, reps: '8-10', rest_seconds: 90, notes: '', is_time: 0, sort_order: 2 },
+    { day_key: 'back_biceps', name: 'Jalón al pecho', sets: 4, reps: '8-12', rest_seconds: 90, notes: '', is_time: 0, sort_order: 3 },
+    { day_key: 'back_biceps', name: 'Remo en máquina', sets: 3, reps: '12-15', rest_seconds: 75, notes: '', is_time: 0, sort_order: 4 },
+    { day_key: 'back_biceps', name: 'Curl bíceps barra', sets: 3, reps: '10-12', rest_seconds: 60, notes: '', is_time: 0, sort_order: 5 },
+    { day_key: 'back_biceps', name: 'Curl martillo', sets: 3, reps: '12', rest_seconds: 60, notes: '', is_time: 0, sort_order: 6 },
+    { day_key: 'back_biceps', name: 'Face pull', sets: 3, reps: '15-20', rest_seconds: 45, notes: '', is_time: 0, sort_order: 7 },
+    // Día 2: Pecho y Tríceps
+    { day_key: 'chest_triceps', name: 'Press banca barra', sets: 4, reps: '6-8', rest_seconds: 120, notes: '', is_time: 0, sort_order: 1 },
+    { day_key: 'chest_triceps', name: 'Press inclinado mancuernas', sets: 4, reps: '8-10', rest_seconds: 90, notes: '', is_time: 0, sort_order: 2 },
+    { day_key: 'chest_triceps', name: 'Aperturas en máquina', sets: 3, reps: '12-15', rest_seconds: 60, notes: '', is_time: 0, sort_order: 3 },
+    { day_key: 'chest_triceps', name: 'Press hombro mancuernas', sets: 3, reps: '10-12', rest_seconds: 75, notes: '', is_time: 0, sort_order: 4 },
+    { day_key: 'chest_triceps', name: 'Elevaciones laterales', sets: 3, reps: '15-20', rest_seconds: 45, notes: '', is_time: 0, sort_order: 5 },
+    { day_key: 'chest_triceps', name: 'Extensión tríceps polea', sets: 3, reps: '12-15', rest_seconds: 60, notes: '', is_time: 0, sort_order: 6 },
+    { day_key: 'chest_triceps', name: 'Press francés', sets: 3, reps: '10-12', rest_seconds: 60, notes: '', is_time: 0, sort_order: 7 },
+    // Día 3: Glúteo y Femoral
+    { day_key: 'glute_hamstring', name: 'Hip thrust barra', sets: 4, reps: '10-12', rest_seconds: 90, notes: '', is_time: 0, sort_order: 1 },
+    { day_key: 'glute_hamstring', name: 'Peso muerto rumano', sets: 4, reps: '10-12', rest_seconds: 90, notes: '', is_time: 0, sort_order: 2 },
+    { day_key: 'glute_hamstring', name: 'Curl femoral tumbado', sets: 3, reps: '12-15', rest_seconds: 75, notes: '', is_time: 0, sort_order: 3 },
+    { day_key: 'glute_hamstring', name: 'Patada glúteo polea', sets: 3, reps: '15 c/pierna', rest_seconds: 45, notes: '', is_time: 0, sort_order: 4 },
+    { day_key: 'glute_hamstring', name: 'Abducción cadera máquina', sets: 3, reps: '20', rest_seconds: 45, notes: '', is_time: 0, sort_order: 5 },
+    { day_key: 'glute_hamstring', name: 'Hip thrust pie elevado', sets: 3, reps: '15', rest_seconds: 60, notes: '', is_time: 0, sort_order: 6 },
+    { day_key: 'glute_hamstring', name: 'Puente glúteo una pierna', sets: 3, reps: '15 c/pierna', rest_seconds: 45, notes: '', is_time: 0, sort_order: 7 },
+    // Día 4: Cuádriceps y Hombro
+    { day_key: 'quad_shoulder', name: 'Sentadilla barra', sets: 4, reps: '6-8', rest_seconds: 120, notes: '', is_time: 0, sort_order: 1 },
+    { day_key: 'quad_shoulder', name: 'Prensa inclinada', sets: 4, reps: '10-12', rest_seconds: 90, notes: '', is_time: 0, sort_order: 2 },
+    { day_key: 'quad_shoulder', name: 'Extensión cuádriceps máquina', sets: 3, reps: '12-15', rest_seconds: 75, notes: '', is_time: 0, sort_order: 3 },
+    { day_key: 'quad_shoulder', name: 'Zancadas', sets: 3, reps: '10-12 c/pierna', rest_seconds: 75, notes: '', is_time: 0, sort_order: 4 },
+    { day_key: 'quad_shoulder', name: 'Press hombro barra', sets: 3, reps: '8-10', rest_seconds: 90, notes: '', is_time: 0, sort_order: 5 },
+    { day_key: 'quad_shoulder', name: 'Elevaciones laterales cable', sets: 4, reps: '15-20', rest_seconds: 45, notes: '', is_time: 0, sort_order: 6 },
+    { day_key: 'quad_shoulder', name: 'Press Arnold', sets: 3, reps: '10-12', rest_seconds: 60, notes: '', is_time: 0, sort_order: 7 },
+    { day_key: 'quad_shoulder', name: 'Elevación de talones', sets: 3, reps: '15-20', rest_seconds: 45, notes: '', is_time: 0, sort_order: 8 },
+    // Día 5: Abdomen (Casa)
+    { day_key: 'abs', name: 'Plancha', sets: 3, reps: '60s', rest_seconds: 60, notes: '', is_time: 1, sort_order: 1 },
+    { day_key: 'abs', name: 'Plancha lateral', sets: 3, reps: '45s c/lado', rest_seconds: 60, notes: '', is_time: 1, sort_order: 2 },
+    { day_key: 'abs', name: 'Dead bug', sets: 3, reps: '10 c/lado', rest_seconds: 60, notes: '', is_time: 0, sort_order: 3 },
+    { day_key: 'abs', name: 'Bird dog', sets: 3, reps: '12 c/lado', rest_seconds: 60, notes: '', is_time: 0, sort_order: 4 },
+    { day_key: 'abs', name: 'Hollow body hold', sets: 3, reps: '30s', rest_seconds: 60, notes: '', is_time: 1, sort_order: 5 },
+    { day_key: 'abs', name: 'Mountain climbers', sets: 3, reps: '30s', rest_seconds: 60, notes: '', is_time: 1, sort_order: 6 },
+    { day_key: 'abs', name: 'Crunch en polea', sets: 3, reps: '15', rest_seconds: 45, notes: '', is_time: 0, sort_order: 7 },
+  ];
+
+  const insertExercise = db.prepare(`
+    INSERT INTO workout_exercises (user_id, day_key, name, sets, reps, rest_seconds, notes, is_time, sort_order)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+
+  for (const u of allUsers) {
+    const hasExercises = db.prepare('SELECT COUNT(*) as count FROM workout_exercises WHERE user_id = ?').get(u.id);
+    if (hasExercises.count === 0) {
+      for (const ex of DEFAULT_EXERCISES) {
+        insertExercise.run(u.id, ex.day_key, ex.name, ex.sets, ex.reps, ex.rest_seconds, ex.notes, ex.is_time, ex.sort_order);
+      }
     }
   }
 }

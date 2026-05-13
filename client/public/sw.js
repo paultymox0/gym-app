@@ -19,9 +19,52 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Client sends SKIP_WAITING when user taps the update banner
+// Messages from client
 self.addEventListener('message', event => {
-  if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
+  const { type, endTime, exerciseName } = event.data ?? {};
+
+  if (type === 'SKIP_WAITING') {
+    self.skipWaiting();
+    return;
+  }
+
+  // Schedule a rest-done notification when the app may be in background.
+  // event.waitUntil keeps the SW alive until the Promise resolves.
+  if (type === 'REST_TIMER_START') {
+    const delay = Math.max(0, endTime - Date.now());
+    event.waitUntil(new Promise(resolve => {
+      setTimeout(() => {
+        self.registration.showNotification('¡Listo! 💪', {
+          body: exerciseName ? `${exerciseName} — Siguiente serie` : 'Siguiente serie',
+          tag: 'rest-done',
+          icon: '/icons/icon-192.svg',
+          badge: '/icons/icon-192.svg',
+          vibrate: [200, 100, 200],
+          requireInteraction: false,
+          data: { url: '/habits' },
+        }).catch(() => {}).finally(resolve);
+      }, delay);
+    }));
+  }
+
+  if (type === 'REST_TIMER_STOP') {
+    // Nothing to cancel (setTimeout already fired or will be ignored)
+    // Close any lingering "resting" notification
+    self.registration.getNotifications({ tag: 'rest-timer' }).then(notifs => notifs.forEach(n => n.close()));
+  }
+});
+
+// Tap on notification → open/focus app
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  const url = event.notification.data?.url || '/';
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clients => {
+      const existing = clients.find(c => c.url.includes(self.location.origin));
+      if (existing) return existing.focus();
+      return self.clients.openWindow(url);
+    })
+  );
 });
 
 self.addEventListener('fetch', event => {

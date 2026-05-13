@@ -35,6 +35,7 @@ const tasksRoutes = require('./routes/tasks');
 const projectsRoutes = require('./routes/projects');
 const habitsRoutes = require('./routes/habits');
 const notesRoutes = require('./routes/notes');
+const workoutsRoutes = require('./routes/workouts');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/sessions', sessionRoutes);
@@ -50,6 +51,7 @@ app.use('/api/tasks', tasksRoutes);
 app.use('/api/projects', projectsRoutes);
 app.use('/api/habits', habitsRoutes);
 app.use('/api/notes', notesRoutes);
+app.use('/api/workouts', workoutsRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

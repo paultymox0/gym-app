@@ -3,23 +3,50 @@ const router = express.Router();
 const db = require('../db/database');
 const { getDayType, getExercisesForUser } = require('../exercises-data');
 
+// New 5-day plan (Mon–Fri). Old 6-day keys kept for backwards compat.
+const NEW_SCHEDULE = {
+  1: 'back_biceps',
+  2: 'chest_triceps',
+  3: 'glute_hamstring',
+  4: 'quad_shoulder',
+  5: 'abs',
+  6: null,
+  0: null,
+};
+const NEW_DAY_KEYS = new Set(['back_biceps', 'chest_triceps', 'glute_hamstring', 'quad_shoulder', 'abs']);
+
+function getDefaultDayType(date) {
+  const d = new Date(date + 'T12:00:00');
+  return NEW_SCHEDULE[d.getDay()] || null;
+}
+
+function getExercisesForSession(dayKey, userId) {
+  if (NEW_DAY_KEYS.has(dayKey)) {
+    const rows = db.prepare(
+      'SELECT * FROM workout_exercises WHERE user_id = ? AND day_key = ? ORDER BY sort_order, id'
+    ).all(parseInt(userId), dayKey);
+    return rows.map(r => ({ id: r.id, name: r.name, sets: r.sets, reps: r.reps, rest: r.rest_seconds, notes: r.notes || '', isTime: r.is_time === 1 }));
+  }
+  // Backward compat: old day types still served from static data
+  return getExercisesForUser(dayKey, parseInt(userId));
+}
+
 // GET /api/sessions/today/:userId
 router.get('/today/:userId', (req, res) => {
   const { userId } = req.params;
   const today = new Date().toISOString().split('T')[0];
 
-  // Check existing session first — handles day-type overrides set from Home
   const session = db.prepare(
     'SELECT * FROM sessions WHERE user_id = ? AND date = ?'
   ).get(parseInt(userId), today);
 
-  const dayType = session?.day_type || getDayType(today);
+  const dayType = session?.day_type || getDefaultDayType(today);
 
   if (!dayType) {
     return res.json({ session: null, dayType: null, exercises: [], isRestDay: true });
   }
 
-  const exercises = getExercisesForUser(dayType, parseInt(userId));
+  const exercises = getExercisesForSession(dayType, userId);
 
   if (session) {
     const sets = db.prepare(
@@ -98,18 +125,23 @@ router.get('/:id', (req, res) => {
     'SELECT * FROM set_logs WHERE session_id = ? ORDER BY exercise_name, set_number'
   ).all(session.id);
 
-  const exercises = getExercisesForUser(session.day_type, session.user_id);
+  const exercises = getExercisesForSession(session.day_type, session.user_id);
 
   res.json({ session, sets, exercises });
 });
 
 // PUT /api/sessions/:id
 router.put('/:id', (req, res) => {
-  const { completed, notes } = req.body;
-  db.prepare(
-    'UPDATE sessions SET completed = ?, notes = ? WHERE id = ?'
-  ).run(completed ? 1 : 0, notes || '', parseInt(req.params.id));
-
+  const { completed, notes, day_type } = req.body;
+  if (day_type !== undefined) {
+    db.prepare(
+      'UPDATE sessions SET completed = ?, notes = ?, day_type = ? WHERE id = ?'
+    ).run(completed ? 1 : 0, notes || '', day_type, parseInt(req.params.id));
+  } else {
+    db.prepare(
+      'UPDATE sessions SET completed = ?, notes = ? WHERE id = ?'
+    ).run(completed ? 1 : 0, notes || '', parseInt(req.params.id));
+  }
   const session = db.prepare('SELECT * FROM sessions WHERE id = ?').get(parseInt(req.params.id));
   res.json({ session });
 });
@@ -202,7 +234,7 @@ router.get('/date/:userId/:date', (req, res) => {
   const sets = db.prepare(
     'SELECT * FROM set_logs WHERE session_id = ? ORDER BY exercise_name, set_number'
   ).all(session.id);
-  const exercises = getExercisesForUser(session.day_type, parseInt(userId));
+  const exercises = getExercisesForSession(session.day_type, userId);
   res.json({ session, sets, exercises });
 });
 
