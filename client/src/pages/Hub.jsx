@@ -302,7 +302,11 @@ export default function Hub() {
             </button>
 
             {/* Streak card */}
-            <div style={glass} className="rounded-xl p-4 flex flex-col justify-between">
+            <button
+              onClick={() => navigate('/profile')}
+              style={glass}
+              className="rounded-xl p-4 flex flex-col justify-between text-left active:scale-95 transition-transform"
+            >
               <Flame size={28} style={{ color: accentColor }} />
               <div className="mt-4">
                 <p className="text-2xl font-bold text-[#e8dfee]">
@@ -311,7 +315,7 @@ export default function Hub() {
                 </p>
                 <p className="text-xs text-[#958da1]">Racha actual</p>
               </div>
-            </div>
+            </button>
 
           </div>
         </section>

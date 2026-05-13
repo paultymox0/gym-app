@@ -338,7 +338,12 @@ export default function Projects() {
             {filtered.map(project => {
               const s = STATUS[project.status] || STATUS.active;
               return (
-                <div key={project.id} style={glass} className="rounded-xl p-5 flex flex-col gap-5">
+                <button
+                  key={project.id}
+                  onClick={() => setSelected(project)}
+                  style={{ ...glass, textAlign: 'left' }}
+                  className="rounded-xl p-5 flex flex-col gap-5 w-full active:scale-[0.98] transition-transform"
+                >
 
                   {/* Top row: status badge + title + icon */}
                   <div className="flex justify-between items-start">
@@ -384,16 +389,12 @@ export default function Projects() {
                     <span className="text-[11px] text-[#958da1]">
                       {project.completed_tasks}/{project.task_count} tareas
                     </span>
-                    <button
-                      onClick={() => setSelected(project)}
-                      className="text-sm font-bold active:scale-95 transition-transform"
-                      style={{ color: accentColor }}
-                    >
+                    <span className="text-sm font-bold" style={{ color: accentColor }}>
                       Ver Detalle →
-                    </button>
+                    </span>
                   </div>
 
-                </div>
+                </button>
               );
             })}
           </div>

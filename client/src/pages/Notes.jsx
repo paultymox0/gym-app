@@ -236,7 +236,7 @@ export default function Notes() {
 
         {/* Search */}
         <div className="relative">
-          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#958da1' }} />
+          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: '#958da1' }} />
           <input
             value={search}
             onChange={e => handleSearch(e.target.value)}
