@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { AnimatePresence, motion } from 'framer-motion';
 import BottomNav from './components/BottomNav';
+import UpdateBanner from './components/UpdateBanner';
 import Login from './pages/Login';
 import Hub from './pages/Hub';
 import Session from './pages/Session';
@@ -90,6 +91,7 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <AppRoutes />
+        <UpdateBanner />
       </AuthProvider>
     </BrowserRouter>
   );
