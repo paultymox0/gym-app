@@ -31,6 +31,10 @@ const cycleRoutes = require('./routes/cycle');
 const exportRoutes = require('./routes/export');
 const statsRoutes = require('./routes/stats');
 const photosRoutes = require('./routes/photos');
+const tasksRoutes = require('./routes/tasks');
+const projectsRoutes = require('./routes/projects');
+const habitsRoutes = require('./routes/habits');
+const notesRoutes = require('./routes/notes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/sessions', sessionRoutes);
@@ -42,6 +46,10 @@ app.use('/api/cycle', cycleRoutes);
 app.use('/api/export', exportRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/photos', photosRoutes);
+app.use('/api/tasks', tasksRoutes);
+app.use('/api/projects', projectsRoutes);
+app.use('/api/habits', habitsRoutes);
+app.use('/api/notes', notesRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

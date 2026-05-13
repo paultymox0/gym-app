@@ -93,6 +93,65 @@ function initializeSchema() {
       notes TEXT,
       FOREIGN KEY(user_id) REFERENCES users(id)
     );
+
+    CREATE TABLE IF NOT EXISTS tasks (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER,
+      title TEXT NOT NULL,
+      description TEXT DEFAULT '',
+      priority TEXT DEFAULT 'medium',
+      completed INTEGER DEFAULT 0,
+      project_id INTEGER,
+      created_at TEXT DEFAULT (datetime('now')),
+      completed_at TEXT,
+      FOREIGN KEY(user_id) REFERENCES users(id)
+    );
+
+    CREATE TABLE IF NOT EXISTS projects (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER,
+      title TEXT NOT NULL,
+      description TEXT DEFAULT '',
+      status TEXT DEFAULT 'active',
+      progress INTEGER DEFAULT 0,
+      color TEXT DEFAULT '#3B82F6',
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY(user_id) REFERENCES users(id)
+    );
+
+    CREATE TABLE IF NOT EXISTS habits (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER,
+      name TEXT NOT NULL,
+      emoji TEXT DEFAULT '✅',
+      type TEXT DEFAULT 'custom',
+      color TEXT DEFAULT '#3B82F6',
+      sort_order INTEGER DEFAULT 0,
+      active INTEGER DEFAULT 1,
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY(user_id) REFERENCES users(id)
+    );
+
+    CREATE TABLE IF NOT EXISTS habit_logs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER,
+      habit_id INTEGER,
+      date TEXT NOT NULL,
+      UNIQUE(user_id, habit_id, date),
+      FOREIGN KEY(user_id) REFERENCES users(id),
+      FOREIGN KEY(habit_id) REFERENCES habits(id)
+    );
+
+    CREATE TABLE IF NOT EXISTS notes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER,
+      title TEXT NOT NULL,
+      content TEXT DEFAULT '',
+      tags TEXT DEFAULT '',
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY(user_id) REFERENCES users(id)
+    );
   `);
 
   // Seed users
@@ -112,6 +171,15 @@ function initializeSchema() {
     `).run(andreaHash);
 
     console.log('Users seeded: timmy (timmy123) and andrea (andrea123)');
+  }
+
+  // Seed gym habit for each user (idempotent)
+  const allUsers = db.prepare('SELECT id, color FROM users').all();
+  for (const u of allUsers) {
+    const has = db.prepare('SELECT COUNT(*) as count FROM habits WHERE user_id = ? AND type = ?').get(u.id, 'gym');
+    if (has.count === 0) {
+      db.prepare('INSERT INTO habits (user_id, name, emoji, type, color, sort_order) VALUES (?, ?, ?, ?, ?, ?)').run(u.id, 'Gym', '🏋️', 'gym', u.color, 0);
+    }
   }
 }
 

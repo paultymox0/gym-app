@@ -4,9 +4,13 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { AnimatePresence, motion } from 'framer-motion';
 import BottomNav from './components/BottomNav';
 import Login from './pages/Login';
-import Home from './pages/Home';
+import Hub from './pages/Hub';
 import Session from './pages/Session';
 import Profile from './pages/Profile';
+import Tasks from './pages/Tasks';
+import Projects from './pages/Projects';
+import Habits from './pages/Habits';
+import Notes from './pages/Notes';
 
 function AnimatedPage({ children }) {
   return (
@@ -67,38 +71,14 @@ function AppRoutes() {
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
-        <Route
-          path="/login"
-          element={
-            isAuthenticated ? <Navigate to="/" replace /> : (
-              <AnimatedPage><Login /></AnimatedPage>
-            )
-          }
-        />
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <AnimatedPage><Home /></AnimatedPage>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/session"
-          element={
-            <ProtectedRoute>
-              <AnimatedPage><Session /></AnimatedPage>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <AnimatedPage><Profile /></AnimatedPage>
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/login" element={isAuthenticated ? <Navigate to="/" replace /> : <AnimatedPage><Login /></AnimatedPage>} />
+        <Route path="/" element={<ProtectedRoute><AnimatedPage><Hub /></AnimatedPage></ProtectedRoute>} />
+        <Route path="/session" element={<ProtectedRoute><AnimatedPage><Session /></AnimatedPage></ProtectedRoute>} />
+        <Route path="/profile" element={<ProtectedRoute><AnimatedPage><Profile /></AnimatedPage></ProtectedRoute>} />
+        <Route path="/tasks" element={<ProtectedRoute><AnimatedPage><Tasks /></AnimatedPage></ProtectedRoute>} />
+        <Route path="/projects" element={<ProtectedRoute><AnimatedPage><Projects /></AnimatedPage></ProtectedRoute>} />
+        <Route path="/habits" element={<ProtectedRoute><AnimatedPage><Habits /></AnimatedPage></ProtectedRoute>} />
+        <Route path="/notes" element={<ProtectedRoute><AnimatedPage><Notes /></AnimatedPage></ProtectedRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AnimatePresence>

@@ -1,12 +1,14 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, Dumbbell, User } from 'lucide-react';
+import { Home, CheckSquare, Briefcase, Zap, FileText } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 const navItems = [
-  { path: '/', label: 'Inicio', icon: Home },
-  { path: '/session', label: 'Sesión', icon: Dumbbell },
-  { path: '/profile', label: 'Perfil', icon: User },
+  { path: '/', label: 'Hub', icon: Home },
+  { path: '/tasks', label: 'Tareas', icon: CheckSquare },
+  { path: '/projects', label: 'Proyectos', icon: Briefcase },
+  { path: '/habits', label: 'Hábitos', icon: Zap },
+  { path: '/notes', label: 'Notas', icon: FileText },
 ];
 
 export default function BottomNav() {
@@ -33,26 +35,14 @@ export default function BottomNav() {
             <button
               key={path}
               onClick={() => navigate(path)}
-              className="flex flex-col items-center justify-center flex-1 h-full gap-1 transition-all active:scale-90"
+              className="flex flex-col items-center justify-center flex-1 h-full gap-0.5 transition-all active:scale-90"
             >
-              <div
-                style={{
-                  filter: isActive ? `drop-shadow(0 0 6px ${accentColor})` : 'none',
-                  transition: 'filter 0.2s ease',
-                }}
-              >
-                <Icon
-                  size={22}
-                  style={{ color: isActive ? accentColor : '#3D4A5C' }}
-                  strokeWidth={isActive ? 2.5 : 1.5}
-                />
+              <div style={{ filter: isActive ? `drop-shadow(0 0 6px ${accentColor})` : 'none', transition: 'filter 0.2s ease' }}>
+                <Icon size={20} style={{ color: isActive ? accentColor : '#3D4A5C' }} strokeWidth={isActive ? 2.5 : 1.5} />
               </div>
               <span
-                className="text-xs font-medium"
-                style={{
-                  color: isActive ? accentColor : '#3D4A5C',
-                  textShadow: isActive ? `0 0 8px ${accentColor}80` : 'none',
-                }}
+                className="text-[10px] font-medium"
+                style={{ color: isActive ? accentColor : '#3D4A5C', textShadow: isActive ? `0 0 8px ${accentColor}80` : 'none' }}
               >
                 {label}
               </span>
