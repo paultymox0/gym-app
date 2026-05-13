@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Plus, X, Search, Trash2, Tag } from 'lucide-react';
 
@@ -138,6 +139,7 @@ function NoteCard({ note, onClick, accentColor }) {
 
 export default function Notes() {
   const { user, apiCall } = useAuth();
+  const navigate = useNavigate();
   const [notes, setNotes] = useState([]);
   const [search, setSearch] = useState('');
   const [activeTag, setActiveTag] = useState('');
@@ -212,12 +214,13 @@ export default function Notes() {
         }}
       >
         <div className="flex items-center gap-3">
-          <div
-            className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border shrink-0"
+          <button
+            onClick={() => navigate('/profile')}
+            className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border shrink-0 active:scale-90 transition-transform"
             style={{ borderColor: accentColor, background: `${accentColor}20`, color: accentColor }}
           >
             {user?.name?.[0]?.toUpperCase()}
-          </div>
+          </button>
           <h1 className="text-xl font-bold tracking-tight" style={{ color: accentColor }}>Notas</h1>
         </div>
         <button

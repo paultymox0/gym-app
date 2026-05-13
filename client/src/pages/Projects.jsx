@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Bell, Plus, X, Minus, FolderOpen } from 'lucide-react';
+import NotificationsDrawer from '../components/NotificationsDrawer';
 
 const STATUS = {
   active:    { label: 'Activo',     color: '#89ceff', bg: 'rgba(137,206,255,0.12)' },
@@ -211,10 +213,12 @@ function ProjectDetailSheet({ project, onClose, onUpdate }) {
 
 export default function Projects() {
   const { user, apiCall } = useAuth();
+  const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
   const [statusFilter, setStatusFilter] = useState('all');
   const [showAdd, setShowAdd] = useState(false);
   const [selected, setSelected] = useState(null);
+  const [showNotifs, setShowNotifs] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const accentColor = user?.color || '#d2bbff';
@@ -263,15 +267,17 @@ export default function Projects() {
         }}
       >
         <div className="flex items-center gap-3">
-          <div
-            className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border shrink-0"
+          <button
+            onClick={() => navigate('/profile')}
+            className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border shrink-0 active:scale-90 transition-transform"
             style={{ borderColor: accentColor, background: `${accentColor}20`, color: accentColor }}
           >
             {user?.name?.[0]?.toUpperCase()}
-          </div>
-          <h1 className="text-xl font-bold tracking-tight" style={{ color: accentColor }}>Mi Hub</h1>
+          </button>
+          <h1 className="text-xl font-bold tracking-tight" style={{ color: accentColor }}>Proyectos</h1>
         </div>
         <button
+          onClick={() => setShowNotifs(true)}
           className="w-10 h-10 flex items-center justify-center rounded-full active:scale-95 transition-transform"
           style={{ color: accentColor }}
         >
@@ -413,6 +419,9 @@ export default function Projects() {
           onClose={() => setSelected(null)}
           onUpdate={handleUpdate}
         />
+      )}
+      {showNotifs && (
+        <NotificationsDrawer accentColor={accentColor} onClose={() => setShowNotifs(false)} />
       )}
     </div>
   );

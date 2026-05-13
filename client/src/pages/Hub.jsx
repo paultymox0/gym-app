@@ -6,11 +6,17 @@ import {
   Dumbbell, Moon, Flame, Trophy,
 } from 'lucide-react';
 import SupplementsSection from '../components/SupplementsSection';
+import NotificationsDrawer from '../components/NotificationsDrawer';
 
 const DAY_ES = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 const MONTH_ES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
 
 const SESSION_NAMES = {
+  back_biceps: 'Espalda / Bíceps',
+  chest_triceps: 'Pecho / Tríceps',
+  glute_hamstring: 'Glúteo / Femoral',
+  quad_shoulder: 'Cuádriceps / Hombro',
+  abs: 'Abdomen Casa',
   upper_a: 'Upper A', lower_a: 'Lower A', abs_a: 'Abs A',
   upper_b: 'Upper B', lower_b: 'Lower B', abs_b: 'Abs B',
 };
@@ -77,6 +83,7 @@ export default function Hub() {
     projects: [], notes: [], competition: null,
   });
   const [loading, setLoading] = useState(true);
+  const [showNotifs, setShowNotifs] = useState(false);
 
   const now = new Date();
   const accentColor = user?.color || '#d2bbff';
@@ -161,15 +168,17 @@ export default function Hub() {
         }}
       >
         <div className="flex items-center gap-3">
-          <div
-            className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border shrink-0"
+          <button
+            onClick={() => navigate('/profile')}
+            className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border shrink-0 active:scale-90 transition-transform"
             style={{ borderColor: accentColor, background: `${accentColor}20`, color: accentColor }}
           >
             {user?.name?.[0]?.toUpperCase()}
-          </div>
+          </button>
           <h1 className="text-xl font-bold tracking-tight" style={{ color: accentColor }}>Mi Hub</h1>
         </div>
         <button
+          onClick={() => setShowNotifs(true)}
           className="w-10 h-10 flex items-center justify-center rounded-full active:scale-95 transition-transform"
           style={{ color: accentColor }}
         >
@@ -339,6 +348,10 @@ export default function Hub() {
         <CompetitionCard competition={competition} />
 
       </main>
+
+      {showNotifs && (
+        <NotificationsDrawer accentColor={accentColor} onClose={() => setShowNotifs(false)} />
+      )}
     </div>
   );
 }

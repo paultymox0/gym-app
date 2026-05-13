@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Plus, X, Flame, ChevronRight, Trash2, Check, Bell } from 'lucide-react';
+import { Plus, X, Flame, ChevronRight, Trash2, Check } from 'lucide-react';
 import SupplementsSection from '../components/SupplementsSection';
 import { MonthlyCalendarModal } from '../components/MonthlyCalendarModal';
 
@@ -191,12 +191,13 @@ export default function Habits() {
         }}
       >
         <div className="flex items-center gap-3">
-          <div
-            className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border shrink-0"
+          <button
+            onClick={() => navigate('/profile')}
+            className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border shrink-0 active:scale-90 transition-transform"
             style={{ borderColor: accentColor, background: `${accentColor}20`, color: accentColor }}
           >
             {user?.name?.[0]?.toUpperCase()}
-          </div>
+          </button>
           <div>
             <h1 className="text-xl font-bold tracking-tight" style={{ color: accentColor }}>Hábitos</h1>
             <p className="text-[11px]" style={{ color: '#958da1' }}>{completedToday}/{habits.length} completados hoy</p>

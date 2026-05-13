@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Bell, Search, SlidersHorizontal, Check, Plus, ChevronDown, X, Trash2 } from 'lucide-react';
+import { Bell, Check, Plus, ChevronDown, X, Trash2 } from 'lucide-react';
+import NotificationsDrawer from '../components/NotificationsDrawer';
 
 const PRIORITY = {
   high:   { label: 'Alta',  color: '#ffb4ab', bg: 'rgba(255,180,171,0.12)' },
@@ -122,13 +124,119 @@ function AddTaskSheet({ onClose, onAdd, projects, accentColor }) {
   );
 }
 
+function EditTaskSheet({ task, onClose, onSave, projects, accentColor }) {
+  const [title, setTitle] = useState(task.title);
+  const [description, setDescription] = useState(task.description || '');
+  const [priority, setPriority] = useState(task.priority || 'medium');
+  const [projectId, setProjectId] = useState(task.project_id ? String(task.project_id) : '');
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (!title.trim()) return;
+    setSaving(true);
+    await onSave(task.id, { title: title.trim(), description: description.trim(), priority, project_id: projectId || null });
+    onClose();
+  }
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[60] flex items-end justify-center"
+      style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)' }}
+      onClick={e => e.target === e.currentTarget && onClose()}
+    >
+      <form
+        onSubmit={handleSubmit}
+        className="w-full max-w-md rounded-t-3xl p-5 slide-up"
+        style={{ ...sheetBg, paddingBottom: 'calc(env(safe-area-inset-bottom) + 1.25rem)' }}
+      >
+        <div className="flex items-center justify-between mb-5">
+          <h3 className="text-lg font-bold text-[#e8dfee]">Editar tarea</h3>
+          <button
+            type="button" onClick={onClose}
+            className="w-9 h-9 flex items-center justify-center rounded-full active:scale-90"
+            style={{ background: 'rgba(255,255,255,0.06)', color: '#958da1' }}
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="space-y-3">
+          <input
+            autoFocus value={title} onChange={e => setTitle(e.target.value)}
+            placeholder="Título de la tarea"
+            className="w-full rounded-xl px-4 py-3 text-sm text-[#e8dfee] placeholder-[#958da1] outline-none"
+            style={inputStyle}
+          />
+          <input
+            value={description} onChange={e => setDescription(e.target.value)}
+            placeholder="Descripción (opcional)"
+            className="w-full rounded-xl px-4 py-3 text-sm text-[#e8dfee] placeholder-[#958da1] outline-none"
+            style={inputStyle}
+          />
+
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-[#958da1] mb-2">Prioridad</p>
+            <div className="flex gap-2">
+              {Object.entries(PRIORITY).map(([key, { label, color }]) => (
+                <button
+                  key={key} type="button" onClick={() => setPriority(key)}
+                  className="flex-1 py-2 rounded-full text-xs font-semibold transition-all active:scale-95"
+                  style={{
+                    background: priority === key ? `${color}20` : 'rgba(255,255,255,0.04)',
+                    border: `1px solid ${priority === key ? color : '#4a4455'}`,
+                    color: priority === key ? color : '#958da1',
+                  }}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {projects.length > 0 && (
+            <div className="relative">
+              <select
+                value={projectId} onChange={e => setProjectId(e.target.value)}
+                className="w-full rounded-xl px-4 py-3 text-sm appearance-none outline-none"
+                style={{ ...inputStyle, color: projectId ? '#e8dfee' : '#958da1' }}
+              >
+                <option value="">Sin proyecto</option>
+                {projects.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}
+              </select>
+              <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[#958da1]" />
+            </div>
+          )}
+
+          <button
+            type="submit" disabled={!title.trim() || saving}
+            className="w-full py-3 rounded-full text-sm font-semibold transition-all active:scale-[0.98]"
+            style={{ background: accentColor, color: '#15121b', opacity: title.trim() ? 1 : 0.4 }}
+          >
+            Guardar cambios
+          </button>
+        </div>
+      </form>
+    </div>,
+    document.body
+  );
+}
+
 export default function Tasks() {
   const { user, apiCall } = useAuth();
+  const navigate = useNavigate();
   const [tasks, setTasks] = useState([]);
   const [projects, setProjects] = useState([]);
   const [statusFilter, setStatusFilter] = useState('pending');
   const [priorityFilter, setPriorityFilter] = useState('all');
   const [showAdd, setShowAdd] = useState(false);
+  const [editTask, setEditTask] = useState(null);
+  const [showNotifs, setShowNotifs] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const accentColor = user?.color || '#d2bbff';
@@ -164,6 +272,11 @@ export default function Tasks() {
     load();
   }
 
+  async function handleEdit(id, data) {
+    const res = await apiCall(`/tasks/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+    if (res.ok) load();
+  }
+
   const filtered = tasks
     .filter(t => statusFilter === 'all' ? true : statusFilter === 'pending' ? !t.completed : t.completed)
     .filter(t => priorityFilter === 'all' ? true : t.priority === priorityFilter);
@@ -193,25 +306,22 @@ export default function Tasks() {
         }}
       >
         <div className="flex items-center gap-3">
-          <div
-            className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border shrink-0"
+          <button
+            onClick={() => navigate('/profile')}
+            className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border shrink-0 active:scale-90 transition-transform"
             style={{ borderColor: accentColor, background: `${accentColor}20`, color: accentColor }}
           >
             {user?.name?.[0]?.toUpperCase()}
-          </div>
-          <h1 className="text-xl font-bold tracking-tight" style={{ color: accentColor }}>Mi Hub</h1>
+          </button>
+          <h1 className="text-xl font-bold tracking-tight" style={{ color: accentColor }}>Tareas</h1>
         </div>
-        <div className="flex items-center gap-1">
-          {[Search, SlidersHorizontal, Bell].map((Icon, i) => (
-            <button
-              key={i}
-              className="w-9 h-9 flex items-center justify-center rounded-full active:scale-90 transition-transform"
-              style={{ color: accentColor }}
-            >
-              <Icon size={18} />
-            </button>
-          ))}
-        </div>
+        <button
+          onClick={() => setShowNotifs(true)}
+          className="w-10 h-10 flex items-center justify-center rounded-full active:scale-95 transition-transform"
+          style={{ color: accentColor }}
+        >
+          <Bell size={20} />
+        </button>
       </header>
 
       <main className="px-4 pt-6 max-w-2xl mx-auto space-y-6">
@@ -296,7 +406,11 @@ export default function Tasks() {
           {filtered.map(task => {
             const p = PRIORITY[task.priority] || PRIORITY.medium;
             return (
-              <div key={task.id} style={glass} className="rounded-xl flex items-center gap-4 p-4">
+              <div
+                key={task.id} style={glass}
+                className="rounded-xl flex items-center gap-4 p-4 active:scale-[0.98] transition-transform cursor-pointer"
+                onClick={() => setEditTask(task)}
+              >
                 {/* Priority bar */}
                 <div
                   className="w-1 rounded-full shrink-0 self-stretch"
@@ -336,7 +450,7 @@ export default function Tasks() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-2 shrink-0" onClick={e => e.stopPropagation()}>
                   <button
                     onClick={() => handleDelete(task.id)}
                     className="w-7 h-7 flex items-center justify-center rounded-full active:scale-90 transition-all"
@@ -398,6 +512,18 @@ export default function Tasks() {
           projects={projects}
           accentColor={accentColor}
         />
+      )}
+      {editTask && (
+        <EditTaskSheet
+          task={editTask}
+          onClose={() => setEditTask(null)}
+          onSave={handleEdit}
+          projects={projects}
+          accentColor={accentColor}
+        />
+      )}
+      {showNotifs && (
+        <NotificationsDrawer accentColor={accentColor} onClose={() => setShowNotifs(false)} />
       )}
     </div>
   );
