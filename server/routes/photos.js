@@ -2,6 +2,14 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db/database');
 
+// GET /api/photos/:userId/all - All photos with data in one query (avoids N+1)
+router.get('/:userId/all', (req, res) => {
+  const photos = db.prepare(
+    'SELECT id, date, notes, photo_data as thumb FROM progress_photos WHERE user_id = ? ORDER BY date DESC'
+  ).all(parseInt(req.params.userId));
+  res.json({ photos });
+});
+
 // GET /api/photos/:userId - List photos (metadata only)
 router.get('/:userId', (req, res) => {
   const photos = db.prepare(

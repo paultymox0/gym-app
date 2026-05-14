@@ -38,6 +38,11 @@ const glass = {
   border: '1px solid rgba(255, 255, 255, 0.06)',
 };
 
+const solidCard = {
+  background: 'var(--bg-card)',
+  border: '1px solid var(--border-subtle)',
+};
+
 function CompetitionCard({ competition }) {
   if (!competition) return null;
   const { timmy, andrea } = competition;
@@ -113,13 +118,16 @@ export default function Hub() {
         notes: notesRes.ok ? await notesRes.json() : [],
         competition: compRes.ok ? await compRes.json() : null,
       });
-    } catch (e) { console.error(e); }
-    setLoading(false);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
   }
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen" style={{ background: '#15121b' }}>
+      <div className="flex items-center justify-center min-h-screen" style={{ background: 'var(--bg-base)' }}>
         <div
           className="w-8 h-8 rounded-full border-2 animate-spin"
           style={{ borderColor: `${accentColor}30`, borderTopColor: accentColor }}
@@ -153,16 +161,16 @@ export default function Hub() {
     : 0;
 
   return (
-    <div className="min-h-screen pb-32" style={{ background: '#15121b', color: '#e8dfee' }}>
+    <div className="min-h-screen pb-32" style={{ background: 'var(--bg-base)', color: 'var(--text-primary)' }}>
 
       {/* Header */}
       <header
         className="flex justify-between items-center px-4 w-full sticky top-0 z-40 border-b"
         style={{
-          background: 'rgba(21, 18, 27, 0.85)',
+          background: 'rgba(12, 11, 18, 0.88)',
           backdropFilter: 'blur(24px)',
           WebkitBackdropFilter: 'blur(24px)',
-          borderColor: '#4a4455',
+          borderColor: 'var(--border-mid)',
           paddingTop: 'max(env(safe-area-inset-top), 0px)',
           height: 'calc(64px + env(safe-area-inset-top, 0px))',
         }}
@@ -225,19 +233,19 @@ export default function Hub() {
         <section className="flex gap-3">
           <button
             onClick={() => navigate('/tasks')}
-            style={glass}
+            style={solidCard}
             className="flex-1 p-4 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-transform"
           >
             <CheckSquare size={18} style={{ color: accentColor }} />
-            <span className="text-xs font-semibold text-[#e8dfee]">Nueva Tarea</span>
+            <span className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>Nueva Tarea</span>
           </button>
           <button
             onClick={() => navigate('/notes')}
-            style={glass}
+            style={solidCard}
             className="flex-1 p-4 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-transform"
           >
             <FilePlus size={18} className="text-[#89ceff]" />
-            <span className="text-xs font-semibold text-[#e8dfee]">Nueva Nota</span>
+            <span className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>Nueva Nota</span>
           </button>
         </section>
 
@@ -252,7 +260,7 @@ export default function Hub() {
             {urgentTask ? (
               <button
                 onClick={() => navigate('/tasks')}
-                style={{ ...glass, borderLeft: '4px solid #ffb4ab' }}
+                style={{ background: 'rgba(255, 180, 171, 0.07)', border: '1px solid rgba(255, 180, 171, 0.18)', borderRadius: '12px' }}
                 className="col-span-2 rounded-xl p-4 text-left active:scale-[0.98] transition-transform"
               >
                 <div className="flex justify-between items-start mb-2">
@@ -271,7 +279,7 @@ export default function Hub() {
               </button>
             ) : (
               <div
-                style={{ ...glass, borderLeft: '4px solid #4a4455' }}
+                style={solidCard}
                 className="col-span-2 rounded-xl p-4"
               >
                 <p className="text-sm font-semibold text-[#e8dfee]">Sin tareas pendientes</p>
@@ -282,7 +290,7 @@ export default function Hub() {
             {/* Gym card */}
             <button
               onClick={() => navigate('/session')}
-              style={glass}
+              style={solidCard}
               className="rounded-xl p-4 flex flex-col justify-between active:scale-95 transition-transform text-left"
             >
               <div className="mb-2">
@@ -304,7 +312,7 @@ export default function Hub() {
             {/* Streak card */}
             <button
               onClick={() => navigate('/profile')}
-              style={glass}
+              style={solidCard}
               className="rounded-xl p-4 flex flex-col justify-between text-left active:scale-95 transition-transform"
             >
               <Flame size={28} style={{ color: accentColor }} />

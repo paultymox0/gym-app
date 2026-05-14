@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { WeightChart, VolumeChart } from '../components/ProgressChart';
@@ -256,21 +256,10 @@ function ProgressPhotosSection({ accentColor }) {
 
   async function fetchPhotos() {
     try {
-      const res = await apiCall(`/photos/${user.id}`);
+      const res = await apiCall(`/photos/${user.id}/all`);
       if (res.ok) {
         const data = await res.json();
-        // Load all photo data
-        const photosWithData = await Promise.all(
-          data.photos.map(async p => {
-            const dataRes = await apiCall(`/photos/${user.id}/${p.id}/data`);
-            if (dataRes.ok) {
-              const d = await dataRes.json();
-              return { ...p, user_id: user.id, thumb: d.photo_data };
-            }
-            return { ...p, user_id: user.id };
-          })
-        );
-        setPhotos(photosWithData);
+        setPhotos(data.photos);
       }
     } catch (err) {
       console.error('Error fetching photos:', err);
@@ -490,8 +479,9 @@ export default function Profile() {
     ? (weightData[weightData.length - 1].weight - weightData[0].weight).toFixed(1)
     : null;
 
-  const filteredExercises = exercises.filter(ex =>
-    ex.exercise_name.toLowerCase().includes(exerciseSearch.toLowerCase())
+  const filteredExercises = useMemo(
+    () => exercises.filter(ex => ex.exercise_name.toLowerCase().includes(exerciseSearch.toLowerCase())),
+    [exercises, exerciseSearch]
   );
 
   if (loading) {

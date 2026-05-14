@@ -29,6 +29,15 @@ router.post('/:userId/:dayKey/exercise', (req, res) => {
   const { userId, dayKey } = req.params;
   const { name, sets, reps, rest_seconds, notes, is_time } = req.body;
 
+  if (!name || typeof name !== 'string' || name.trim().length === 0 || name.length > 100)
+    return res.status(400).json({ error: 'Nombre de ejercicio inválido' });
+  if (sets !== undefined && (isNaN(sets) || sets < 1 || sets > 20))
+    return res.status(400).json({ error: 'Series debe ser entre 1 y 20' });
+  if (reps !== undefined && String(reps).length > 20)
+    return res.status(400).json({ error: 'Repeticiones inválidas' });
+  if (rest_seconds !== undefined && (isNaN(rest_seconds) || rest_seconds < 0 || rest_seconds > 600))
+    return res.status(400).json({ error: 'Descanso debe ser entre 0 y 600 segundos' });
+
   const maxOrder = db.prepare(
     'SELECT MAX(sort_order) as m FROM workout_exercises WHERE user_id = ? AND day_key = ?'
   ).get(parseInt(userId), dayKey);
@@ -45,6 +54,12 @@ router.post('/:userId/:dayKey/exercise', (req, res) => {
 // PUT /api/workouts/exercise/:id — update exercise
 router.put('/exercise/:id', (req, res) => {
   const { name, sets, reps, rest_seconds, notes, is_time } = req.body;
+  if (!name || typeof name !== 'string' || name.trim().length === 0 || name.length > 100)
+    return res.status(400).json({ error: 'Nombre de ejercicio inválido' });
+  if (sets !== undefined && (isNaN(sets) || sets < 1 || sets > 20))
+    return res.status(400).json({ error: 'Series debe ser entre 1 y 20' });
+  if (rest_seconds !== undefined && (isNaN(rest_seconds) || rest_seconds < 0 || rest_seconds > 600))
+    return res.status(400).json({ error: 'Descanso debe ser entre 0 y 600 segundos' });
   db.prepare(`
     UPDATE workout_exercises SET name = ?, sets = ?, reps = ?, rest_seconds = ?, notes = ?, is_time = ?
     WHERE id = ?

@@ -1,14 +1,14 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, CheckSquare, Briefcase, Zap, FileText } from 'lucide-react';
+import { Home, Dumbbell, Zap, CheckSquare, User } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 const navItems = [
-  { path: '/', label: 'Hub', icon: Home },
-  { path: '/tasks', label: 'Tareas', icon: CheckSquare },
-  { path: '/projects', label: 'Proyectos', icon: Briefcase },
-  { path: '/habits', label: 'Hábitos', icon: Zap },
-  { path: '/notes', label: 'Notas', icon: FileText },
+  { path: '/',        label: 'Hub',     icon: Home },
+  { path: '/session', label: 'Sesión',  icon: Dumbbell },
+  { path: '/habits',  label: 'Hábitos', icon: Zap },
+  { path: '/tasks',   label: 'Tareas',  icon: CheckSquare },
+  { path: '/profile', label: 'Perfil',  icon: User },
 ];
 
 export default function BottomNav() {
